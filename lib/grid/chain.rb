@@ -40,7 +40,6 @@ module Grid
 		# Like push, but moves relative to the chain's head.
 		def move(vect)
 			if push vect + head
-				puts vect + head
 				@moved += vect
 			end
 		end

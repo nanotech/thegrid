@@ -1,4 +1,4 @@
-require 'priority_queue'
+require 'heap'
 
 module Grid
 
