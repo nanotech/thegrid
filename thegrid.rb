@@ -16,6 +16,9 @@ end
 # The main, top-level game class.
 #
 class Game < Screens
+	NAME = 'thegrid'
+	MAINTAINER = 'nanotech'
+
 	def initialize
 		super('The Grid')
 		switch_to 'main_menu'

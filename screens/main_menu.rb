@@ -18,18 +18,20 @@ class MainMenu < Screen
 						 Vector(400, 80), Vector(20, 20))
 
 		@menu.add 'Play!' => :play
+		@menu.add 'Check for Updates' => :updates
 	end
 
 	def button_down(id)
 		super
-		case id
-		when MsLeft
-			@menu.click
-		end
+		@menu.click if id == MsLeft
 	end
 
 	def play
 		@window.switch_to(:game_grid)# { destory! }
+	end
+
+	def updates
+		@window.switch_to :check_for_updates
 	end
 
 	def draw
