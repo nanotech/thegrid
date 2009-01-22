@@ -19,12 +19,14 @@ class GameGrid < Screen
 		@grid = Stack.new @window, Vector(10, 8), Vector(20,20), 60, 6
 		@grid.create :selection, [0xcc0099ff, 0x660033ff]
 		@grid.create :background, [0x22ffffff, 0x16ffffff], true
-		@grid.create :chain, [0x6600ff00, 0x66009900]
 
 		@grid.load
 
-		@chain = Chain.new(@grid[:chain])
-		@chain.push Vector(rand(@grid.area.x),rand(@grid.area.y))
+		random_vector = Vector(rand(@grid.area.x),rand(@grid.area.y))
+		@chain = Chain.new(@grid, random_vector, 5, :animated,
+						   [0x6600ff00, 0x66009900], [0xffff9900, 0xccff0000])
+
+		@grid.manage :chain => @chain
 		
 		@grid[:selection].walkable = false
 		#@grid[:chain].walkable = false

@@ -56,6 +56,15 @@ module Grid
 			@layers[name] = Layer.new(self, *args) unless @layers[name]
 		end
 
+		def manage(name_and_layer)
+			name, layer = name_and_layer.to_a[0]
+			@layers[name] = layer
+		end
+
+		def unmanage(layer_name)
+			@layers.delete layer_name
+		end
+
 		# Get a grid vector from a world vector.
 		def block_under(vect)
 			if vect == :mouse

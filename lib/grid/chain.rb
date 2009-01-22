@@ -3,44 +3,83 @@ module Grid
 	# Provides an interface for manipulating a Layer
 	# like the classic "Snake" game.
 	#
-	class Chain
-		attr_accessor :vectors, :max
+	class Chain < Layer
+		attr_accessor :vectors, :max_size, :animated
 		attr_reader :layer
 
 		include Enumerable
 
-		def initialize(layer)
-			@layer = layer
-			@layer.helper = self
+		def initialize(grid, start_at, max_size, animated,
+					   color, head_color=color, *args)
+
+			super(grid, color, *args)
+
 			@vectors = []
-			@max = 5
-			@easer = VectorEaser.new(Vector.new(0,0), :out, :quad)
-			@moved = Vector.new(0,0)
+			@max_size = max_size
+			@head_color = head_color.expand_gradient
+
+			push start_at if start_at
+			start_at ||= Vector(0,0)
+			start_pos = start_at * @grid.increment
+
+			@easer = Array.new(@max_size) do
+				VectorEaser.new(start_pos, :out, :quad)
+			end
+			@moved = Array.new(@max_size) { start_at }
+			@animated = animated
 		end
 
-		# Called by Layer#draw
-		def color(vect)
-			if vect == head
-				[0xffff9900, 0xffff9900, 0xccff0000, 0xccff0000]
+		# Called by Layer#draw, specifies a different color for the head.
+		def color_of(vect)
+			@head_color if vect == head
+		end
+
+		# Calculate animation.
+		def position_of(vect, world_pos, id)
+			if @animated and @moved[id]
+				blocks_moved = @moved[id] * @grid.increment
+				easer = @easer[id]
+
+				# Only set if we haven't set already
+				if easer.target != blocks_moved
+					easer.to(blocks_moved, 600)
+				end
+
+				easer.update
+				world_pos - blocks_moved + easer.value
 			end
 		end
 
-		def position(vect, pos)
-			blocks_moved = @moved * @layer.grid.increment
-
-			# Only set if we haven't set already
-			if @easer.target != blocks_moved
-				@easer.to(blocks_moved, 600)
-			end
-
-			@easer.update
-			pos - blocks_moved + @easer.value
-		end
-
-		# Like push, but moves relative to the chain's head.
+		# Like push, but adds relative to the chain's head.
+		# Also animates movement.
 		def move(vect)
-			if push vect + head
-				@moved += vect
+			if @animated
+				last_positions = []
+				@vectors.each_index do |id|
+					last_positions[id] = @vectors[id]
+				end
+			end
+
+			if push vect + head and @animated
+				@vectors.each_index do |id|
+					last_position = last_positions[id] || @vectors[@vectors.size-2]
+					@moved[id] += @vectors[id] - last_position
+				end
+			end
+		end
+
+		def draw
+			@vectors.each_with_index do |vector, id|
+				block = self[vector]
+
+				color = color_of vector
+				color ||= @color
+
+				world_position = vector * @grid.increment + @grid.position
+				animated_position = position_of vector, world_position, id
+				world_position = animated_position if animated_position
+
+				block.draw(world_position, @grid.block_size, color)
 			end
 		end
 
@@ -62,8 +101,8 @@ module Grid
 		alias last head
 		alias first tail
 
-		def head_block; @layer[head] end
-		def tail_block; @layer[tail] end
+		def head_block; self[head] end
+		def tail_block; self[tail] end
 
 		def each
 			@vectors.each do |block|
@@ -75,14 +114,15 @@ module Grid
 
 		# Helper method for adding blocks to the chain.
 		def add_with(method, vect)
-			if vect < @layer.grid.area and vect >= Vector(0,0)
+			if vect < @grid.area and vect >= Vector(0,0)
 
-				overlap = @vectors.include? vect
+				overlap = @vectors.index vect
 
-				@layer.turn(vect, :on)
+				turn vect, :on
+				@vectors.delete_at(overlap) if overlap
 				@vectors.send(method, vect)
 
-				if @max != 0 and !overlap and @vectors.size > @max
+				if @max_size != 0 and !overlap and @vectors.size > @max_size
 					shift
 				end
 
@@ -95,7 +135,7 @@ module Grid
 			vect = @vectors.send(method)
 			return self.send(method) if @vectors.include? vect
 
-			@layer.turn(vect, :off)
+			turn vect, :off
 		end
 	end
 end

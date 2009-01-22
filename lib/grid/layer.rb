@@ -15,14 +15,7 @@ module Grid
 			@helper = nil
 			@walkable = true
 
-			if @color
-				@color = Array.new(4, @color) if @color.is_a?(Numeric)
-				if @color.size == 2
-					# Create a linear gradient from two values
-					@color[0], @color[1], @color[2], @color[3] = 
-					@color[0], @color[0], @color[1], @color[1]
-				end
-			end
+			@color = @color.expand_gradient if @color
 
 			@color ||= [0x44ffffff, 0x44ffffff, 0x33ffffff, 0x33ffffff]
 
@@ -130,5 +123,22 @@ module Grid
 				end
 			end
 		end
+	end
+end
+
+# Helper methods
+
+class Array
+	# Create a 4-node linear gradient from two values.
+	def expand_gradient
+		if self.size == 2
+			*gradient = self[0], self[0], self[1], self[1]
+		end
+	end
+end
+
+class Numeric
+	def expand_gradient
+		Array.new(4) { self.dup }
 	end
 end
