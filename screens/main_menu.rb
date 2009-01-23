@@ -19,6 +19,7 @@ class MainMenu < Screen
 
 		@menu.add 'Play!' => :play
 		@menu.add 'Check for Updates' => :updates
+		@menu.add 'Play Online' => :online_index
 	end
 
 	def button_down(id)
@@ -32,6 +33,10 @@ class MainMenu < Screen
 
 	def updates
 		@window.switch_to :check_for_updates
+	end
+
+	def online_index
+		@window.switch_to :online_index
 	end
 
 	def draw
