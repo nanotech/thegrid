@@ -64,41 +64,5 @@ module Grid
 				@screen.send(action) if action and @screen.respond_to?(action)
 			end
 		end
-
-=begin
-		# Called by Layer#draw
-		def color(vect)
-			if vect == head
-				[0xffff9900, 0xffff9900, 0xccff0000, 0xccff0000]
-			end
-		end
-
-		# Adds a block to the head of the chain.
-		def push(vect); add_with(:push, vect) end
-
-		# Adds a block to the tail of the chain.
-		def unshift(vect); add_with(:unshift, vect) end
-
-		# Removes a block from the head of the chain.
-		def pop; remove_with(:pop) end
-
-		# Removes a block from the tail of the chain
-		def shift; remove_with(:shift) end
-
-		def head; @vectors.last end
-		def tail; @vectors.first end
-
-		alias last head
-		alias first tail
-
-		def head_block; @layer[head] end
-		def tail_block; @layer[tail] end
-
-		def each
-			@vectors.each do |block|
-				yield block
-			end
-		end
-=end
 	end
 end
