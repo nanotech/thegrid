@@ -67,14 +67,14 @@ module Grid
 						# Check to see if the helper wants to manually
 						# define a color for this block
 						if @helper
-							color = @helper.color(pos/@grid.increment) if @helper.respond_to?(:color)
-							newpos = @helper.position(pos/@grid.increment, pos) if @helper.respond_to?(:position)
+							new_color = @helper.color(pos/@grid.increment) if @helper.respond_to?(:color)
+							new_pos = @helper.position(pos/@grid.increment, pos) if @helper.respond_to?(:position)
 						end
 
-						color ||= @color
-						newpos ||= pos
+						new_color ||= @color
+						new_pos ||= pos
 
-						block.draw(newpos, @grid.block_size, color) if block and block.enabled
+						block.draw(new_pos, @grid.block_size, new_color) if block and block.enabled
 						pos.y += @grid.increment.y
 					end
 				end

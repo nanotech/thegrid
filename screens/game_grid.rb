@@ -1,4 +1,5 @@
 require 'grid'
+require 'gameplay'
 
 #
 # The main game screen.
@@ -6,30 +7,22 @@ require 'grid'
 class GameGrid < Screen
 	attr_reader :grid
 
-	include Grid
+	include Gameplay
 
 	def initialize(*args)
 		super
 
-		# Put the score here, as it is the environment that tracks this now
-		@score = 0
 		@font = Font.new(@window, Gosu::default_font_name, 20)
 		@title = Font.new(@window, Gosu::default_font_name, 200)
 
-		@grid = Stack.new @window, Vector(10, 8), Vector(20,20), 60, 6
-		@grid.create :selection, [0xcc0099ff, 0x660033ff]
-		@grid.create :background, [0x22ffffff, 0x16ffffff], true
+		@grid = Sector.new @window, Vector(10, 8), Vector(20,20), 60, 6
 
 		@grid.load
+		@grid.font = Font.new(@window, Gosu::default_font_name, 20)
 
-		random_vector = Vector(rand(@grid.area.x),rand(@grid.area.y))
-		@chain = Chain.new(@grid, random_vector, 5, :animated,
-						   [0x6600ff00, 0x66009900], [0xffff9900, 0xccff0000])
+		@sequence = Gameplay::Sequence.new(@grid)
 
-		@grid.manage :chain => @chain
-		
-		@grid[:selection].walkable = false
-		#@grid[:chain].walkable = false
+		@grid[:wall].walkable = false
 
 		find_path
 
@@ -43,16 +36,16 @@ class GameGrid < Screen
 		unless @paused
 			case id 
 			when KbEscape
-				@grid.save([:selection])
+				@grid.save([:wall])
 				@window.close
 			when KbRight
-				@chain.move Vector(1,0)
+				@sequence.move Vector(1,0)
 			when KbLeft
-				@chain.move Vector(-1,0)
+				@sequence.move Vector(-1,0)
 			when KbDown
-				@chain.move Vector(0,1)
+				@sequence.move Vector(0,1)
 			when KbUp
-				@chain.move Vector(0,-1)
+				@sequence.move Vector(0,-1)
 			when KbM
 				@window.switch_to(:main_menu)
 			when KbQ
@@ -66,9 +59,9 @@ class GameGrid < Screen
 	def find_path
 		@grid[:path] = nil
 		@grid.create :path, [0x66ff00ff, 0x33ff00ff]
-		@pathfinder = Pathfinder.new(@grid)
+		@pathfinder = Grid::Pathfinder.new(@grid)
 
-		path, closed = @pathfinder.astar(Vector(0,0), @chain.head)#Vector(9, 7))
+		path, closed = @pathfinder.astar(Vector(0,0), @sequence.head)#Vector(9, 7))
 
 		path.each { |v| grid[:path].turn(v, :on) } if path
 	end
@@ -79,7 +72,7 @@ class GameGrid < Screen
 	end
 
 	def leave
-		@grid.save([:selection])
+		@grid.save([:wall])
 	end
 
 	def update
@@ -93,12 +86,12 @@ class GameGrid < Screen
 
 				if target
 					unless @dragged_over
-						@drag_mode = !@grid[:selection][target].enabled
+						@drag_mode = !@grid[:wall][target].enabled
 					end
 
 					if target != @dragged_over
 						@dragged_over = target
-						@grid[:selection].turn(target, @drag_mode) if target
+						@grid[:wall].turn(target, @drag_mode) if target
 						find_path
 					end
 				end

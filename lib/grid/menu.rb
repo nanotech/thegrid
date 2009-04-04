@@ -7,7 +7,6 @@ module Grid
 	#
 	class Menu < Stack
 		attr_accessor :buttons
-		attr_reader :font
 
 		#include Enumerable
 
@@ -16,13 +15,13 @@ module Grid
 
 			@screen = screen
 			@window = screen.window
-			@font = font
 			@direction = direction
 			@area = area
 
 			super(@window, area, position, button_size, padding)
 
 			@buttons = []
+			@font = font
 
 			create :buttons
 		end

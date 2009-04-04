@@ -10,13 +10,14 @@ module Grid
 		include Enumerable
 
 		def initialize(grid, start_at, max_size, animated,
-					   color, head_color=color, *args)
+					   color, head_color=color, head_image=nil, *args)
 
 			super(grid, color, *args)
 
 			@vectors = []
 			@max_size = max_size
 			@head_color = head_color.expand_gradient
+			@head_image = head_image
 
 			push start_at if start_at
 			start_at ||= Vector(0,0)
@@ -78,8 +79,13 @@ module Grid
 				world_position = vector * @grid.increment + @grid.position
 				animated_position = position_of vector, world_position, id
 				world_position = animated_position if animated_position
+				if vector == head
+					image = @head_image
+				else
+					text = image = nil
+				end
 
-				block.draw(world_position, @grid.block_size, color)
+				block.draw world_position, @grid.block_size, color, image, text
 			end
 		end
 

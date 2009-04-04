@@ -7,7 +7,7 @@ module Grid
 	class Stack
 		attr_reader :width, :height, :increment
 		attr_accessor :window, :layers, :block_size, :padding, :position, :area,
-		              :exclude
+		              :exclude, :font
 
 		include Enumerable
 

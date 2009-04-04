@@ -82,7 +82,7 @@ end
 class Screen
 	attr_accessor :window, :name
 
-	def initialize(window, name)
+	def initialize(window, name, *ignored)
 		@window = window
 		@name = name
 		@height = window.height
