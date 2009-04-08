@@ -12,7 +12,7 @@ class OnlineIndex < Screen
 	include Grid
 	require 'grid/menu'
 
-	SERVER = 'http://localhost/~NanoTech/thegrid-server/'
+	SERVER = 'http://localhost/~NanoTech/thegrid-server/public/'
 
 	def initialize(*args)
 		super
@@ -46,7 +46,6 @@ class OnlineIndex < Screen
 				end
 
 				if @text_stack.size == 2
-					p @text_stack
 					@status = ''
 					login *@text_stack
 					@text_stack.clear
@@ -54,15 +53,8 @@ class OnlineIndex < Screen
 				end
 			end
 		end
-		click if id == MsLeft
+		@menu.click if id == MsLeft
 		@window.switch_to :main_menu if id == KbBackspace
-	end
-
-	def click
-		if vect = @menu.block_under(:mouse)
-			game_id = @menu[:buttons][vect].data[:action]
-			get("games/#{game_id}", @postdata)['game']
-		end
 	end
 
 	def login(username, password)
@@ -76,15 +68,15 @@ class OnlineIndex < Screen
 	end
 
 	def fetch
-		data = get 'games', @postdata
+		resp = get 'games', @postdata
 
-		if data[:error]
-			@status = data[:error].to_s
+		if resp[:error]
+			@status = resp[:error].to_s
 		else
-			@games = data['games']
+			@games = resp['data']['games']
 
 			@games.each do |game|
-				@menu.add game['name'] => game['id']
+				@menu.add game['name'] => [:get, "games/#{game['id']}", @postdata]
 			end
 		end
 	end
@@ -92,6 +84,8 @@ class OnlineIndex < Screen
 	def get(url, data={})
 		path = URI.parse(SERVER + url)
 		resp, data = Net::HTTP.post_form(path, data)
+		p resp
+		puts data
 
 		yaml = YAML::load(data)
 

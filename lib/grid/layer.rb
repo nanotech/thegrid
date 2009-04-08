@@ -58,30 +58,21 @@ module Grid
 		end
 
 		def draw
-			pos = @grid.position.dup
-
-			@blocks.each do |column|
+			@blocks.each_with_index do |column, x|
 				if column
-					column.each do |block|
-
-						# Check to see if the helper wants to manually
-						# define a color for this block
-						if @helper
-							new_color = @helper.color(pos/@grid.increment) if @helper.respond_to?(:color)
-							new_pos = @helper.position(pos/@grid.increment, pos) if @helper.respond_to?(:position)
-						end
-
-						new_color ||= @color
-						new_pos ||= pos
-
-						Block.draw(@grid.window, new_pos, @grid.block_size, @zlevel, new_color, @blending) if block
-						pos.y += @grid.increment.y
+					column.each_with_index do |block, y|
+						vect = Vector(x,y)
+						draw_block(vect, vect * @grid.increment + @grid.position) if block
 					end
 				end
-
-				pos.x += @grid.increment.x
-				pos.y = @grid.position.y
 			end
+		end
+
+		def draw_block(vect, pixel)
+			# Check to see if the helper wants to manually
+			# define a color for this block
+
+			Block.draw(@grid.window, pixel, @grid.block_size, @zlevel, @color, @blending)
 		end
 
 		# Converts the layer into ascii art.

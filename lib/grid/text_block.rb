@@ -5,8 +5,8 @@ module Grid
 
 			pos = p + (s / Vector(2.0,2.0))
 
-			@layer.grid.font.draw_rel(
-				text, pos.x, pos.y, @layer.zlevel + 2,
+			font.draw_rel(
+				text, pos.x, pos.y, z + 2,
 				0.5, 0.5, 1, 1, 0xffffffff
 			)
 		end

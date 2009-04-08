@@ -28,7 +28,7 @@ class MainMenu < Screen
 	end
 
 	def play
-		@window.switch_to(:game_grid)# { destory! }
+		@window.switch_to :game_grid
 	end
 
 	def updates

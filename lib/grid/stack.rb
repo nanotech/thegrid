@@ -24,6 +24,8 @@ module Grid
 			@save_exclude = []
 			@exclude = []
 
+			@layer_class = Layer
+
 			@layers = {}
 		end
 
@@ -53,7 +55,7 @@ module Grid
 		end
 
 		def create(name, *args)
-			@layers[name] = Layer.new(self, *args) unless @layers[name]
+			@layers[name] = @layer_class.new(self, *args) unless @layers[name]
 		end
 
 		def manage(name_and_layer)

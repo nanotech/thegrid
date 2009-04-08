@@ -1,4 +1,5 @@
 require 'grid'
+require 'grid/menu_layer'
 
 module Grid
 
@@ -6,7 +7,7 @@ module Grid
 	# that acts like a menu.
 	#
 	class Menu < Stack
-		attr_accessor :buttons
+		attr_accessor :buttons, :labels, :actions
 
 		#include Enumerable
 
@@ -19,6 +20,8 @@ module Grid
 			@area = area
 
 			super(@window, area, position, button_size, padding)
+
+			@layer_class = MenuLayer
 
 			@buttons = []
 			@font = font
@@ -62,7 +65,10 @@ module Grid
 		def click
 			if vect = block_under(:mouse)
 				action = @actions[vect]
-				@screen.send(action) if action and @screen.respond_to?(action)
+				p @actions
+				args = []
+				action, args = *action if action.is_a?(Array)
+				@screen.send(action, *args) if action and @screen.respond_to?(action)
 			end
 		end
 	end
