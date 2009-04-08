@@ -26,7 +26,7 @@ module Grid
 
 				friction_grid.map! do |row|
 					row.map do |block|
-						if block.enabled
+						if block
 							layer.walkable ? block : false
 						end
 					end
@@ -38,11 +38,7 @@ module Grid
 
 						if @world[x][y].nil? or block == false
 
-							# Duplicate the block so we don't modify
-							# the actual stack.
-							block = block.dup if block
 							@world[x][y] = block
-							@world[x][y].location = Vector(x,y) if @world[x][y]
 						end
 					end
 				end
@@ -68,16 +64,16 @@ module Grid
 
 		# Slow, finds the best path, and 
 		# usually looks nice.
-		def djikstra(start, finish)
-			find(start, finish) do |vect, g|
+		def djikstra(*args)
+			find(*args) do |vect, g|
 				f = g
 			end
 		end
 
 		# Fast, finds the best path,
 		# may be slightly ugly.
-		def astar(start, finish)
-			find(start, finish) do |vect, g|
+		def astar(start, finish, *args)
+			find(start, finish, *args) do |vect, g|
 				h = vect.manhatten(finish)
 				f = g + h
 			end
@@ -85,8 +81,8 @@ module Grid
 
 		# Even faster, bad paths in some
 		# cases, path is usually ugly.
-		def greedy(start, finish)
-			find(start, finish) do |vect, g|
+		def greedy(*args)
+			find(*args) do |vect, g|
 				h = vect.manhatten(finish)
 				f = h
 			end
@@ -95,7 +91,7 @@ module Grid
 		private
 
 		# The search algorithm.
-		def find(start, finish)
+		def find(start, finish, costs={})
 			return nil if start == finish
 
 			open_set = PriorityQueue.new # all nodes that are still worth examining
@@ -121,7 +117,7 @@ module Grid
 
 					next if closed_set[newspot.to_a] # already checked
 
-					g = cost_so_far + node.worth
+					g = cost_so_far + (costs[spot] || 1)
 					f = yield newspot, g
 
 					open_set.push [newspot, newpath, g], f

@@ -68,6 +68,23 @@ class Vector
 	def >=(v); @x >= v.x and @y >= v.y end
 	def ==(v); compare(v, :==) end
 
+	def eql?(o)
+		o.is_a?(Vector) && self == o
+	end
+
+	def hash
+		h = 2 # elements in vector (x and y)
+
+		# from Ruby's Array#hash
+		each do |v|
+			h = (h << 1)
+			h = (h<0 ? 1 : 0) if h == 0
+			h ^= v.hash
+		end
+
+		h
+	end
+
 	def compare(v, with)
 		if v.is_a? Vector
 			@x.send(with, v.x) and
@@ -75,9 +92,8 @@ class Vector
 		end
 	end
 
-	# Converts a Vector to an Integer by adding x and y.
-	def to_i; @x.to_i + @y.to_i end
-	def to_s; "Vector(#{@x},#{@y})" end
+	def inspect; "Vector(#{@x},#{@y})" end
+	def to_s; inspect end
 
 	# Converts a Vector to an Array, setting
 	# x and y to keys 0 and 1.

@@ -23,6 +23,9 @@ module Grid
 			@buttons = []
 			@font = font
 
+			@labels = {}
+			@actions = {}
+
 			create :buttons
 		end
 
@@ -34,9 +37,8 @@ module Grid
 				vect = next_button_pos
 				self[:buttons].turn(vect, :on)
 
-				block = self[:buttons][vect]
-				block.text = button[0]
-				block.data[:action] = button[1]
+				@labels[vect] = button[0]
+				@actions[vect] = button[1]
 			end
 		end
 
@@ -59,7 +61,7 @@ module Grid
 
 		def click
 			if vect = block_under(:mouse)
-				action = self[:buttons][vect].data[:action]
+				action = @actions[vect]
 				@screen.send(action) if action and @screen.respond_to?(action)
 			end
 		end

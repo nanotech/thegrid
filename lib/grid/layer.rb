@@ -20,7 +20,7 @@ module Grid
 			@color ||= [0x44ffffff, 0x44ffffff, 0x33ffffff, 0x33ffffff]
 
 			@blocks = Array.new(@grid.area.x) do
-				Array.new(@grid.area.y) { Block.new(self, @fill) }
+				Array.new(@grid.area.y) { @fill }
 			end
 		end
 
@@ -35,21 +35,21 @@ module Grid
 
 			case value
 			when true, :on
-				@blocks[vect.x][vect.y].enabled = true
+				@blocks[vect.x][vect.y] = true
 			when false, :off
-				@blocks[vect.x][vect.y].enabled = false
+				@blocks[vect.x][vect.y] = false
 			end
 		end
 
 		# Toggles the display of a block.
 		def toggle(vect)
-			value = !self[vect].enabled
+			value = !self[vect]
 			turn(vect, value)
 		end
 
 		# Fills the entire layer with the given value.
 		def fill(value)
-			self.map! { |block| Block.new(self, value) }
+			self.map! { value }
 		end
 
 		# Shortcut for @blocks.
@@ -74,7 +74,7 @@ module Grid
 						new_color ||= @color
 						new_pos ||= pos
 
-						block.draw(new_pos, @grid.block_size, new_color) if block and block.enabled
+						Block.draw(@grid.window, new_pos, @grid.block_size, @zlevel, new_color, @blending) if block
 						pos.y += @grid.increment.y
 					end
 				end
@@ -84,13 +84,13 @@ module Grid
 			end
 		end
 
-		# Converts the layer to an ascii representation.
+		# Converts the layer into ascii art.
 		def to_s
 			text = ''
 
 			@blocks.transpose.each do |row|
 				row.each do |block|
-					value = block.enabled ? BOOL_CHARS[1] : BOOL_CHARS[0]
+					value = block ? BOOL_CHARS[1] : BOOL_CHARS[0]
 					text << value
 				end
 

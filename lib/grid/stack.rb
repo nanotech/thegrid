@@ -111,13 +111,6 @@ module Grid
 				if layers
 					layers.each do |name, blocks|
 						create(name)
-
-						blocks.map! do |line|
-							line.map do |block|
-								Block.new(self[name], block)
-							end
-						end
-
 						self[name].blocks = blocks
 					end
 				end

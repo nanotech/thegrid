@@ -86,7 +86,7 @@ class GameGrid < Screen
 
 				if target
 					unless @dragged_over
-						@drag_mode = !@grid[:wall][target].enabled
+						@drag_mode = !@grid[:wall][target]
 					end
 
 					if target != @dragged_over
