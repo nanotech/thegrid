@@ -6,6 +6,7 @@
 
 $LOAD_PATH.push 'lib/'
 require 'screens'
+require 'player'
 
 # Layering of sprites
 module ZOrder
@@ -19,9 +20,15 @@ class Game < Screens
 	NAME = 'thegrid'
 	MAINTAINER = 'nanotech'
 
+	attr_reader :player
+
 	def initialize
-		super('The Grid')
-		switch_to 'main_menu'
+		super 'The Grid'
+		switch_to :login_screen
+	end
+
+	def login_as username, password=false
+		@player = Player.login username, password
 	end
 end
 

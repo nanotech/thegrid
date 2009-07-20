@@ -1,30 +1,35 @@
-require 'grid'
+require 'text_field'
 
 #
-# The main menu.
+# The login screen.
 #
-class MainMenu < Screen
+class LoginScreen < Screen
 	attr_reader :grid
-
-	include Grid
-	require 'grid/menu'
 
 	def initialize(*args)
 		super
 
 		@font = Font.new(@window, Gosu::default_font_name, 30)
-		@menu = Menu.new(self, @font, :horazontal,
-						 Vector(2, 2), Vector(20,20),
-						 Vector(400, 80), Vector(20, 20))
 
-		@menu.add 'Play!' => :game_grid
-		@menu.add 'Check for Updates' => :check_for_updates
-		@menu.add 'Play Online' => :online_index
+		@input_field = TextField.new(
+			@window, [25,(@window.height/2)-65], @window.width - 50,
+			'', Gosu::default_font_name, 40
+		)
+
+		@input_field.focus
 	end
 
 	def button_down(id)
-		super
-		@menu.click if id == MsLeft
+		@input_field.on_change(id) do |username|
+			@window.switch_to :main_menu
+			@input_field.deselect
+			@window.login_as username
+		end
+		super # close on escape
+	end
+
+	def play
+		switch_to :game_grid
 	end
 
 	def draw
@@ -39,8 +44,8 @@ class MainMenu < Screen
 						  mouse_x + 20, mouse_y + 20, 0xffffffff,
 						  ZOrder::UI + 10)
 
-		@menu.draw
+		@input_field.draw
 
-		@font.draw "Welcome, #{Player.current}!", 24, @height - 70, ZOrder::UI
+		@font.draw 'Login:', 25, (@window.height/2)-120, ZOrder::UI
 	end
 end
