@@ -25,11 +25,11 @@ class TextField < Gosu::TextInput
 		@padding = 5
 	end
 
-	def button_down(id, &block)
+	def button_down id
 		# Escape key will not be 'eaten' by text fields; use for deselecting.
 		if id == KbEscape and @window.text_input then
 			deselect
-			yield false if block
+			yield false if block_given?
 
 		elsif id == MsLeft then
 			# Mouse click: Select text field based on mouse position.
@@ -49,8 +49,14 @@ class TextField < Gosu::TextInput
 		elsif id == KbReturn
 			if @window.text_input and @map_file != @window.text_input.text
 				deselect
-				yield true if block
+				yield true if block_given?
 			end
+		end
+	end
+
+	def on_change id
+		button_down(id) do |changed|
+			yield text if changed
 		end
 	end
 
@@ -61,6 +67,9 @@ class TextField < Gosu::TextInput
 	def deselect
 		@window.text_input = nil
 	end
+
+	alias focus select
+	alias blur deselect
 
 	def draw
 		# Depending on whether this is the currently selected input or not, change the

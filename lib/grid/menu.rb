@@ -65,10 +65,15 @@ module Grid
 		def click
 			if vect = block_under(:mouse)
 				action = @actions[vect]
-				p @actions
 				args = []
 				action, args = *action if action.is_a?(Array)
-				@screen.send(action, *args) if action and @screen.respond_to?(action)
+				if action
+					if @screen.respond_to? action
+						@screen.send action, *args
+					else
+						@screen.switch_to action
+					end
+				end
 			end
 		end
 	end

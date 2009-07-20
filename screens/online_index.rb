@@ -84,8 +84,6 @@ class OnlineIndex < Screen
 	def get(url, data={})
 		path = URI.parse(SERVER + url)
 		resp, data = Net::HTTP.post_form(path, data)
-		p resp
-		puts data
 
 		yaml = YAML::load(data)
 

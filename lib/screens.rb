@@ -6,11 +6,12 @@ end
 require 'helpers'
 require 'vector'
 require 'gosu'
+require 'forwardable'
 include Gosu
 
 #
 # Provides some common game-related features such as
-# camera position and binding the escape to close.
+# camera position and binding the escape key to close.
 #
 class Screens < Window
 	attr_reader :width, :height, :center, :fullscreen
@@ -80,6 +81,8 @@ class Screens < Window
 end
 
 class Screen
+	extend Forwardable
+
 	attr_accessor :window, :name
 
 	def initialize(window, name, *ignored)
@@ -92,9 +95,8 @@ class Screen
 	def draw; end
 	def update; end
 
-	def mouse_x; @window.mouse_x end
-	def mouse_y; @window.mouse_y end
-	def button_down?(id); @window.button_down?(id) end
+	def_delegators :@window,
+		:mouse_x, :mouse_y, :switch_to, :button_down?
 
 	def button_down(id)
 		if id == KbEscape then @window.close end
