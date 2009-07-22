@@ -1,6 +1,7 @@
 require 'grid'
 require 'gameplay'
 require 'gooey'
+require 'ai'
 
 #
 # The main game screen.
@@ -26,15 +27,16 @@ class GameGrid < Screen
 
 		@programs = []
 
-		Player.current.programs.each_with_index do |p,i|
-			p.gridize @grid
-			@grid.manage :"program#{i}" => p
-			p.chain.zlevel = 100
-			p.walkable = false
-			@programs << p
-		end
+		@ai = AIPlayer.new 'Sparky'
+		@ai.programs = [Programs::Cookie.new]
+
+		gridize_programs @ai.programs, false
+		gridize_programs Player.current.programs
+
+		@ai.programs[0].walkable = true
 
 		@selected_program = 0
+		current_program.walkable = true
 
 		find_path
 
@@ -42,6 +44,16 @@ class GameGrid < Screen
 		@drag_mode = true
 		@paused = false
 		@entered_at = milliseconds
+	end
+
+	def gridize_programs(programs, add=true)
+		programs.each_with_index do |p,i|
+			p.gridize @grid
+			@grid.manage :"program#{@grid.layers.length}" => p
+			p.chain.zlevel = 100
+			p.walkable = false
+			@programs << p if add
+		end
 	end
 
 	def button_down(id)
@@ -88,8 +100,10 @@ class GameGrid < Screen
 		@grid.create :path, [0x66ff00ff, 0x33ff00ff]
 		@pathfinder = Grid::Pathfinder.new(@grid)
 
-		path, closed = @pathfinder.astar(Vector(0,0), current_program.vectors)
+		path, closed = @pathfinder.astar(@ai.programs[0].head, current_program.vectors)
 		path.each { |v| grid[:path].turn(v, :on) } if path
+
+		@ai.programs[0].move(path[1] - @ai.programs[0].head) if path and path.length >= 2
 	end
 
 	def enter

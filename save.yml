@@ -1,10 +1,19 @@
 --- !thegrid.nanotechcorp.net,2009-01-08/stack 
 :floor: |-
   xxxxxxxxxxxxxxxxxx
-  xxxxxx.xxx......xx
-  xxxxx............x
-  xxxx...xx...xxx..x
-  xxx..xxxxx.xxxxxxx
-  xx...x...xxxxx.xxx
-  x...xx.....x....xx
-  xxxxx......xx....x
+  xxxxxxxxxxxxxxxxxx
+  xxxxxxxxxxxxxxxxxx
+  xxxxxxxxxxxxxxxxxx
+  xxxxxxxxxxxxxxxxxx
+  xxxxxxxxxxxxxxxxxx
+  xxxxxxxxxxxxxxxxxx
+  xxxxxxxxxxxxxxxxxx
+:wall: |-
+  ..................
+  .xxxxxxxxx........
+  .........x........
+  .........x........
+  .........x........
+  .........xxxxxxxx.
+  ..................
+  ..................
