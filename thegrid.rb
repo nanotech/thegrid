@@ -12,7 +12,7 @@ require 'player'
 
 # Layering of sprites
 module ZOrder
-	Background, Tiles, Blocks, UI = *0..5
+	Background, Tiles, Blocks, UI = 0, 100, 1_000, 10_000
 end
 
 #
