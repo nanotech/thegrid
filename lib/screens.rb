@@ -81,8 +81,6 @@ class Screens < Window
 end
 
 class Screen
-	extend Forwardable
-
 	attr_accessor :window, :name
 
 	def initialize(window, name, *ignored)
@@ -90,13 +88,13 @@ class Screen
 		@name = name
 		@height = window.height
 		@width = window.width
+
+		extend SingleForwardable
+		def_delegators :@window, *(@window.methods - methods)
 	end
 
 	def draw; end
 	def update; end
-
-	def_delegators :@window,
-		:mouse_x, :mouse_y, :switch_to, :button_down?
 
 	def button_down(id)
 		if id == KbEscape then @window.close end

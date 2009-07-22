@@ -13,7 +13,7 @@ module Grid
 			@zlevel = @grid.layers.size
 			@fill = fill
 			@helper = nil
-			@walkable = true
+			@walkable = false
 
 			@color = @color.expand_gradient if @color
 

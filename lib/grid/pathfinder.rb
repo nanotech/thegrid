@@ -37,7 +37,6 @@ module Grid
 						@world[x] = [] unless @world[x]
 
 						if @world[x][y].nil? or block == false
-
 							@world[x][y] = block
 						end
 					end
@@ -45,6 +44,14 @@ module Grid
 			end
 
 			@world
+		end
+
+		def to_s
+			@world.map do |row|
+				row.map do |block|
+					block ? 'x' : '.'
+				end.join('')
+			end.join("\n")
 		end
 
 		# Positions that you can move to from a point;
@@ -73,26 +80,38 @@ module Grid
 		# Fast, finds the best path,
 		# may be slightly ugly.
 		def astar(start, finish, *args)
+			sf = singleize finish
+
 			find(start, finish, *args) do |vect, g|
-				h = vect.manhatten(finish)
+				h = vect.manhatten sf
 				f = g + h
 			end
 		end
 
 		# Even faster, bad paths in some
 		# cases, path is usually ugly.
-		def greedy(*args)
-			find(*args) do |vect, g|
-				h = vect.manhatten(finish)
+		def greedy(start, finish, *args)
+			sf = singleize finish
+
+			find(start, finish, *args) do |vect, g|
+				h = vect.manhatten sf
 				f = h
 			end
 		end
 
 		private
 
+		def singleize obj
+			obj.is_a?(Array) ? obj[-1] : obj
+		end
+
+		def finished(vect, finish)
+			vect == finish or finish.respond_to?(:include?) ? finish.include?(vect) : false
+		end
+
 		# The search algorithm.
 		def find(start, finish, costs={})
-			return nil if start == finish
+			return nil if finished start, finish
 
 			open_set = PriorityQueue.new # all nodes that are still worth examining
 			closed_set = {} # nodes we have already visited
@@ -110,7 +129,7 @@ module Grid
 				next if closed_set[spot.to_a] # already checked
 				newpath = path_so_far + [spot]
 
-				return [newpath, closed_set] if spot == finish
+				return [newpath, closed_set] if finished spot, finish
 
 				each_neighbor_of(spot) do |newspot|
 					node = self[newspot]
@@ -125,6 +144,8 @@ module Grid
 
 				closed_set[spot.to_a] = true
 			end
+
+			nil # no path
 		end
 	end
 end

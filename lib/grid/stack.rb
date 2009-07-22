@@ -85,6 +85,12 @@ module Grid
 			end
 		end
 
+		# Get a world vector from a grid vector
+		def position_of(vect)
+			raise TypeError, 'argument cannot be Nil (expected Vector)' if vect.nil?
+			vect * @increment + @position
+		end
+
 		def each
 			@layers.each do |name, layer|
 				yield name, layer unless @exclude.include? name

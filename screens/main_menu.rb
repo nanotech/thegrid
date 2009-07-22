@@ -18,8 +18,9 @@ class MainMenu < Screen
 						 Vector(400, 80), Vector(20, 20))
 
 		@menu.add 'Play!' => :game_grid
-		@menu.add 'Check for Updates' => :check_for_updates
 		@menu.add 'Play Online' => :online_index
+		@menu.add 'Map Editor' => :map_editor
+		@menu.add 'Check for Updates' => :check_for_updates
 	end
 
 	def button_down(id)

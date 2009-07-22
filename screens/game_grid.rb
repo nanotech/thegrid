@@ -1,7 +1,6 @@
 require 'grid'
 require 'gameplay'
 require 'gooey'
-require 'programs/cookie'
 
 #
 # The main game screen.
@@ -14,6 +13,8 @@ class GameGrid < Screen
 
 	def initialize(*args)
 		super
+
+		@window.login_as 'TestUser' if DEVEL
 
 		@font = Font.new(@window, Gosu::default_font_name, 20)
 		@title = Font.new(@window, Gosu::default_font_name, 200)
@@ -29,12 +30,11 @@ class GameGrid < Screen
 			p.gridize @grid
 			@grid.manage :"program#{i}" => p
 			p.chain.zlevel = 100
+			p.walkable = false
 			@programs << p
 		end
 
 		@selected_program = 0
-
-		@grid[:wall].walkable = false
 
 		find_path
 
@@ -46,26 +46,41 @@ class GameGrid < Screen
 
 	def button_down(id)
 		unless @paused
-			case id 
+			case id
 			when KbEscape
-				@grid.save([:wall])
+				leave
 				@window.close
 			when KbRight
-				@programs[@selected_program].move Vector(1,0)
+				direction = Vector(1,0)
 			when KbLeft
-				@programs[@selected_program].move Vector(-1,0)
+				direction = Vector(-1,0)
 			when KbDown
-				@programs[@selected_program].move Vector(0,1)
+				direction = Vector(0,1)
 			when KbUp
-				@programs[@selected_program].move Vector(0,-1)
+				direction = Vector(0,-1)
 			when KbM
 				@window.switch_to(:main_menu)
 			when KbQ
 				@window.switch_to(:main_menu, :cleanup)
 			end
 
+			directions = {
+				KbUp    => Vector( 0,-1),
+				KbDown  => Vector( 0, 1),
+				KbLeft  => Vector(-1, 0),
+				KbRight => Vector( 1, 0)
+			}
+
+			if directions[id] and @grid[:floor][directions[id]+current_program.head]
+				current_program.move directions[id]
+			end
+
 			find_path
 		end
+	end
+
+	def current_program
+		@programs[@selected_program]
 	end
 
 	def find_path
@@ -73,18 +88,18 @@ class GameGrid < Screen
 		@grid.create :path, [0x66ff00ff, 0x33ff00ff]
 		@pathfinder = Grid::Pathfinder.new(@grid)
 
-		path, closed = @pathfinder.astar(Vector(0,0), @programs[@selected_program].head)
-
+		path, closed = @pathfinder.astar(Vector(0,0), current_program.vectors)
 		path.each { |v| grid[:path].turn(v, :on) } if path
 	end
 
 	def enter
 		@paused = true
+		@paused = false if DEVEL
 		@entered_at = milliseconds
 	end
 
 	def leave
-		@grid.save([:wall])
+		@grid.save([:wall,:floor])
 	end
 
 	def update
@@ -94,13 +109,15 @@ class GameGrid < Screen
 			end
 		else
 			if button_down? MsLeft
-				target = @grid.block_under(:mouse)
+				target = @grid.block_under :mouse
 
 				if target
 					unless @dragged_over
 						head = @programs.find_all { |p| p.head == target }.first
 
 						if head
+							current_program.walkable = false
+							head.walkable = true
 							@selected_program = @programs.index(head)
 							find_path
 							return # FIXME
@@ -141,7 +158,7 @@ class GameGrid < Screen
 			0,      @height - 500, 0xff000000, # top left
 			@width, @height - 500, 0xff000000, # top right
 			0,      @height,       0xff222222, # bottom left
-			@width, @height,       0xff222222  # bottom right 
+			@width, @height,       0xff222222  # bottom right
 		)
 
 		draw_hud
@@ -158,12 +175,21 @@ class GameGrid < Screen
 
 		@grid.draw
 
+		target = @grid.block_under :mouse
+
+		if target
+			block_pos = @grid.position_of target
+			rectangle block_pos.x, block_pos.y,
+				      @grid.block_size.x, @grid.block_size.y,
+					  0x33ffffff, ZOrder::UI, :additive
+		end
+
 		if @paused
 			@window.draw_quad(
 				0,      0,       0x66000000, # top left
 				@width, 0,       0x66000000, # top right
 				0,      @height, 0x66000000, # bottom left
-				@width, @height, 0x66000000,  # bottom right 
+				@width, @height, 0x66000000,  # bottom right
 				1000 # zlevel
 			)
 

@@ -4,6 +4,7 @@ module Gameplay
 			super
 			create :wall, [0xcc0099ff, 0x660033ff]
 			create :floor, [0x22ffffff, 0x16ffffff], true
+			self[:floor].walkable = true
 		end
 	end
 end

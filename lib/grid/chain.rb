@@ -4,8 +4,8 @@ module Grid
 	# like the classic "Snake" game.
 	#
 	class Chain < Layer
-		attr_accessor :vectors, :max_size, :animated
-		attr_reader :layer
+		attr_accessor :max_size, :animated
+		attr_reader :vectors, :layer
 
 		include Enumerable
 
