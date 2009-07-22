@@ -1,5 +1,8 @@
+require 'program'
+require 'programs/cookie' if DEVEL
+
 class Player
-	attr_reader :name, :points, :programs
+	attr_reader :username, :points, :programs
 
 	@players = {}
 	@current = nil
@@ -11,6 +14,8 @@ class Player
 	def initialize username, password=false
 		@username = username
 		@password = password
+		@programs = []
+		4.times { @programs << Programs::Cookie.new } if DEVEL
 	end
 
 	def self.login username, password=false

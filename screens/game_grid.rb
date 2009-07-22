@@ -1,5 +1,7 @@
 require 'grid'
 require 'gameplay'
+require 'gooey'
+require 'programs/cookie'
 
 #
 # The main game screen.
@@ -8,6 +10,7 @@ class GameGrid < Screen
 	attr_reader :grid
 
 	include Gameplay
+	include Gooey
 
 	def initialize(*args)
 		super
@@ -15,12 +18,21 @@ class GameGrid < Screen
 		@font = Font.new(@window, Gosu::default_font_name, 20)
 		@title = Font.new(@window, Gosu::default_font_name, 200)
 
-		@grid = Sector.new @window, Vector(10, 8), Vector(20,20), 60, 6
+		@grid = Sector.new @window, Vector(18, 8), Vector(20,20), 60, 6
 
 		@grid.load
-		@grid.font = Font.new(@window, Gosu::default_font_name, 20)
+		@grid.font = @font
 
-		@sequence = Gameplay::Sequence.new(@grid)
+		@programs = []
+
+		Player.current.programs.each_with_index do |p,i|
+			p.gridize @grid
+			@grid.manage :"program#{i}" => p
+			p.chain.zlevel = 100
+			@programs << p
+		end
+
+		@selected_program = 0
 
 		@grid[:wall].walkable = false
 
@@ -39,13 +51,13 @@ class GameGrid < Screen
 				@grid.save([:wall])
 				@window.close
 			when KbRight
-				@sequence.move Vector(1,0)
+				@programs[@selected_program].move Vector(1,0)
 			when KbLeft
-				@sequence.move Vector(-1,0)
+				@programs[@selected_program].move Vector(-1,0)
 			when KbDown
-				@sequence.move Vector(0,1)
+				@programs[@selected_program].move Vector(0,1)
 			when KbUp
-				@sequence.move Vector(0,-1)
+				@programs[@selected_program].move Vector(0,-1)
 			when KbM
 				@window.switch_to(:main_menu)
 			when KbQ
@@ -61,7 +73,7 @@ class GameGrid < Screen
 		@grid.create :path, [0x66ff00ff, 0x33ff00ff]
 		@pathfinder = Grid::Pathfinder.new(@grid)
 
-		path, closed = @pathfinder.astar(Vector(0,0), @sequence.head)#Vector(9, 7))
+		path, closed = @pathfinder.astar(Vector(0,0), @programs[@selected_program].head)
 
 		path.each { |v| grid[:path].turn(v, :on) } if path
 	end
@@ -86,6 +98,14 @@ class GameGrid < Screen
 
 				if target
 					unless @dragged_over
+						head = @programs.find_all { |p| p.head == target }.first
+
+						if head
+							@selected_program = @programs.index(head)
+							find_path
+							return # FIXME
+						end
+
 						@drag_mode = !@grid[:wall][target]
 					end
 
@@ -101,6 +121,21 @@ class GameGrid < Screen
 		end
 	end
 
+	def draw_hud
+		h = 200 # height
+		m = 25  # margin
+
+		translate m, @height - h - m do
+			rectangle 0, 0, @width - m*2, h, 0xff333333
+
+			translate 15, 10 do
+				Player.current.programs.each_with_index do |x,i|
+					text @font, x, 0, 25 * i, ZOrder::UI + 1
+				end
+			end
+		end
+	end
+
 	def draw
 		@window.draw_quad(
 			0,      @height - 500, 0xff000000, # top left
@@ -108,6 +143,8 @@ class GameGrid < Screen
 			0,      @height,       0xff222222, # bottom left
 			@width, @height,       0xff222222  # bottom right 
 		)
+
+		draw_hud
 
 		@window.draw_line(mouse_x, mouse_y, 0xffffffff,
 						  mouse_x + 20, mouse_y + 20, 0xffffffff,

@@ -4,6 +4,8 @@
 # Run this file to start the game.
 #
 
+DEVEL = true
+
 $LOAD_PATH.push 'lib/'
 require 'screens'
 require 'player'
