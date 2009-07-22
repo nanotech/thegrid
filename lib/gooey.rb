@@ -31,6 +31,9 @@ module Gooey
 				  x3, y3, c3,
 				  x4, y4, c4, *args)
 
+		@_gooey_x_offset ||= 0
+		@_gooey_y_offset ||= 0
+
 		x1,x2,x3,x4 = [x1,x2,x3,x4].map { |x| x + @_gooey_x_offset }
 		y1,y2,y3,y4 = [y1,y2,y3,y4].map { |y| y + @_gooey_y_offset }
 
