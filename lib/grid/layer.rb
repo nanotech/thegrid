@@ -1,3 +1,5 @@
+require 'gooey'
+
 module Grid
 	class Layer
 		attr_reader :grid
@@ -114,22 +116,5 @@ module Grid
 				end
 			end
 		end
-	end
-end
-
-# Helper methods
-
-class Array
-	# Create a 4-node linear gradient from two values.
-	def expand_gradient
-		if self.size == 2
-			*gradient = self[0], self[0], self[1], self[1]
-		end
-	end
-end
-
-class Numeric
-	def expand_gradient
-		Array.new(4) { self.dup }
 	end
 end

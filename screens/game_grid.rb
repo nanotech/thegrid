@@ -44,6 +44,7 @@ class GameGrid < Screen
 		@drag_mode = true
 		@paused = false
 		@entered_at = milliseconds
+		@zoom = 1
 	end
 
 	def gridize_programs(programs, add=true)
@@ -74,6 +75,10 @@ class GameGrid < Screen
 				@window.switch_to(:main_menu)
 			when KbQ
 				@window.switch_to(:main_menu, :cleanup)
+			when 24 # =
+				@zoom += 0.05
+			when 27 # -
+				@zoom -= 0.05
 			end
 
 			directions = {
@@ -85,9 +90,8 @@ class GameGrid < Screen
 
 			if directions[id] and @grid[:floor][directions[id]+current_program.head]
 				current_program.move directions[id]
+				find_path
 			end
-
-			find_path
 		end
 	end
 
@@ -187,15 +191,16 @@ class GameGrid < Screen
 			@font.draw("#{hovering_over.x}, #{hovering_over.y}", 10, @height - 30, 0)
 		end
 
-		@grid.draw
+		scale @zoom do
+			@grid.draw
 
-		target = @grid.block_under :mouse
+			target = @grid.block_under :mouse
 
-		if target
-			block_pos = @grid.position_of target
-			rectangle block_pos.x, block_pos.y,
-				      @grid.block_size.x, @grid.block_size.y,
-					  0x33ffffff, ZOrder::UI, :additive
+			if target
+				block_pos = @grid.position_of target
+				rectangle block_pos, @grid.block_size,
+						  0x33ffffff, ZOrder::UI, :additive
+			end
 		end
 
 		if @paused
