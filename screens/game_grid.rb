@@ -201,6 +201,8 @@ class GameGrid < Screen
 				rectangle block_pos, @grid.block_size,
 						  0x33ffffff, ZOrder::UI, :additive
 			end
+
+			draw_selection_overlay
 		end
 
 		if @paused
@@ -215,5 +217,22 @@ class GameGrid < Screen
 			@title.draw_rel('The Grid', @width / 2, @height / 2,
 							1001, 0.5, 0.5)
 		end
+	end
+
+	def draw_selection_overlay
+		tl = @grid.position_of @programs[@selected_program].chain.head
+		tr = tl + Vector(@grid.block_size.x, 0)
+		bl = tl + Vector(0, @grid.block_size.x)
+		br = tl + @grid.block_size
+		o = Math::sin(milliseconds * 0.01) * 5 - 2
+		f = 15 + o
+		g = Vector(-f,f)
+		e = Vector(-o,o)
+		w = 0xffffffff
+
+		line tl - f, tl - o, w, w, ZOrder::UI
+		line br + f, br + o, w, w, ZOrder::UI
+		line tr - g, tr - e, w, w, ZOrder::UI
+		line bl + g, bl + e, w, w, ZOrder::UI
 	end
 end

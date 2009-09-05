@@ -5,7 +5,7 @@ module Programs; end
 
 class Program
 
-	attr_reader :chain
+	attr_reader :chain, :position
 
 	def gridize sector
 		random_vector = Vector(rand(sector.area.x),rand(sector.area.y))
