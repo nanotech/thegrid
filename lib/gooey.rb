@@ -53,15 +53,7 @@ module Gooey
 			 x3, y3, c3,
 			 x4, y4, c4, *args)
 
-		$_gooey_x_offset ||= 0
-		$_gooey_y_offset ||= 0
-		$_gooey_scale_factor ||= 1
-
-		x = [x1,x2,x3,x4]
-		y = [y1,y2,y3,y4]
-		x.map! { |n| n + $_gooey_x_offset }
-		y.map! { |n| n + $_gooey_y_offset }
-		x, y = [x,y].map { |d| d.map { |n| n * $_gooey_scale_factor } }
+		x, y = translate_points [x1,x2,x3,x4], [y1,y2,y3,y4]
 
 		@window.draw_quad(
 			x[0], y[0], c1,
@@ -70,6 +62,39 @@ module Gooey
 			x[3], y[3], c4,
 			*args
 		)
+	end
+
+	# start, end, start color, end color
+	def line *args
+		if args[0].is_a? Vector
+			a, b, c1, c2, *args = args
+			x1 = a.x
+			y1 = a.y
+			x2 = b.x
+			y2 = b.y
+		else
+			x1, y1, x2, y2, c1, c2, *args = args
+		end
+
+		xs, ys = translate_points [x1, x2], [y1, y2]
+
+		@window.draw_line(
+			xs[0], ys[0], c1,
+			xs[1], ys[1], c2,
+			*args
+		)
+	end
+
+	private
+
+	def translate_points xs, ys
+		$_gooey_x_offset ||= 0
+		$_gooey_y_offset ||= 0
+		$_gooey_scale_factor ||= 1
+
+		xs.map! { |n| n + $_gooey_x_offset }
+		ys.map! { |n| n + $_gooey_y_offset }
+		return [xs,ys].map { |d| d.map { |n| n * $_gooey_scale_factor } }
 	end
 end
 
