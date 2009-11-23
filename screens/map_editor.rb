@@ -51,7 +51,7 @@ class MapEditor < Screen
 			end
 		else
 			if button_down? MsLeft
-				target = @grid.block_under :mouse
+				target = @grid.block_under mouse
 
 				if target
 					unless @dragged_over
@@ -81,7 +81,7 @@ class MapEditor < Screen
 						  mouse_x + 20, mouse_y + 20, 0xffffffff,
 						  ZOrder::UI + 10)
 
-		hovering_over = @grid.block_under(:mouse)
+		hovering_over = @grid.block_under mouse
 
 		if hovering_over
 			@font.draw("#{hovering_over.x}, #{hovering_over.y}", 10, @height - 30, 0)
@@ -89,7 +89,7 @@ class MapEditor < Screen
 
 		@grid.draw
 
-		target = @grid.block_under :mouse
+		target = @grid.block_under mouse
 
 		if target
 			block_pos = @grid.position_of target

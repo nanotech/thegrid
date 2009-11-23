@@ -5,15 +5,14 @@ end
 
 require 'helpers'
 require 'vector'
-require 'gosu'
+require 'gooey'
 require 'forwardable'
-include Gosu
 
 #
 # Provides some common game-related features such as
-# camera position and binding the escape key to close.
+# camera position and scene switching.
 #
-class Screens < Window
+class Screens < Gooey::Window
 	attr_reader :width, :height, :center, :fullscreen
 	attr_accessor :camera
 
@@ -24,6 +23,7 @@ class Screens < Window
 		@fullscreen = (fullscreen != false)
 
 		super(@width, @height, @fullscreen)
+		$window = self
 
 		self.caption = caption
 
@@ -64,14 +64,15 @@ class Screens < Window
 			@screens[screen].send(:enter) 
 		end
 
+		remove_subview @current_screen if @current_screen
 		@current_screen = @screens[screen]
+		add_subview @current_screen
 	end
 
 	def destroy!(screen)
 		@screens.delete(screen)
 	end
 
-	def draw; @current_screen.draw end
 	def update; @current_screen.update end
 
 	# Default key mappings
@@ -80,20 +81,22 @@ class Screens < Window
 	end
 end
 
-class Screen
+class Screen < Gooey::View
 	attr_accessor :window, :name
 
+	include Gosu
+
 	def initialize(window, name, *ignored)
+		super(window.frame)
 		@window = window
 		@name = name
 		@height = window.height
 		@width = window.width
 
 		extend SingleForwardable
-		def_delegators :@window, *(@window.methods - methods)
+		def_delegators :@window, *(@window.methods - self.methods)
 	end
 
-	def draw; end
 	def update; end
 
 	def button_down(id)

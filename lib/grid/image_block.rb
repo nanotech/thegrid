@@ -1,7 +1,7 @@
 module Grid
 	class ImageBlock < Block
-		def self.draw(window, p, s, z, color, image, blending=:default)
-			super(window, p, s, z, color, blending)
+		def self.draw(p, s, z, color, image, blending=:default)
+			super(p, s, z, color, blending)
 			
 			image.draw_as_quad(
 				p.x,       p.y,       0xffffffff, # top left

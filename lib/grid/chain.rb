@@ -76,14 +76,14 @@ module Grid
 				color = color_of vector
 				color ||= @color
 
-				world_position = vector * @grid.increment + @grid.position
+				world_position = vector * @grid.increment
 				animated_position = position_of vector, world_position, id
 				world_position = animated_position if animated_position
 
 				if @head_image and vector == head
-					ImageBlock.draw(@grid.window, world_position, @grid.block_size, @zlevel, color, @head_image)
+					ImageBlock.draw(world_position, @grid.block_size, @zlevel, color, @head_image)
 				else
-					Block.draw(@grid.window, world_position, @grid.block_size, @zlevel, color)
+					Block.draw(world_position, @grid.block_size, @zlevel, color)
 				end
 			end
 		end

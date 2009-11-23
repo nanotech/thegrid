@@ -63,7 +63,7 @@ module Grid
 		end
 
 		def click
-			if vect = block_under(:mouse)
+			if vect = block_under(mouse)
 				action = @actions[vect]
 				args = []
 				action, args = *action if action.is_a?(Array)

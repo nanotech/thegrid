@@ -1,7 +1,7 @@
 require 'gooey'
 
 module Grid
-	class Layer
+	class Layer < Gooey::View
 		attr_reader :grid
 		attr_accessor :blocks, :color, :zlevel, :blending, :fill, :helper,
 		              :walkable
@@ -9,6 +9,7 @@ module Grid
 		include Enumerable
 
 		def initialize(grid, color=nil, fill=false)
+			super(grid.frame)
 			@grid = grid
 			@color = color
 			@blending = :default
@@ -64,7 +65,7 @@ module Grid
 				if column
 					column.each_with_index do |block, y|
 						vect = Vector(x,y)
-						draw_block(vect, vect * @grid.increment + @grid.position) if block
+						draw_block(vect, vect * @grid.increment) if block
 					end
 				end
 			end
@@ -74,7 +75,7 @@ module Grid
 			# Check to see if the helper wants to manually
 			# define a color for this block
 
-			Block.draw(@grid.window, pixel, @grid.block_size, @zlevel, @color, @blending)
+			Block.draw(pixel, @grid.block_size, @zlevel, @color, @blending)
 		end
 
 		# Converts the layer into ascii art.

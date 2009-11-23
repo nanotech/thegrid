@@ -155,13 +155,13 @@ class Easer
 		@change = @target - @value
 		@beginning = @value
 		@duration = duration.to_f
-		@start = (@manual_time) ? 0 : milliseconds
+		@start = (@manual_time) ? 0 : Gosu::milliseconds
 		@time = 0
 	end
 
 	def update(time_change=0)
 		if @time < @duration
-			@time = milliseconds - @start unless @manual_time
+			@time = Gosu::milliseconds - @start unless @manual_time
 			@time += time_change
 			@time = @duration if @time > @duration
 			@value = @beginning.ease(@direction, @method,

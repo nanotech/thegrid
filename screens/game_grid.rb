@@ -10,6 +10,7 @@ class GameGrid < Screen
 	attr_reader :grid
 
 	include Gameplay
+	include Gosu
 	include Gooey
 
 	def initialize(*args)
@@ -24,6 +25,8 @@ class GameGrid < Screen
 
 		@grid.load
 		@grid.font = @font
+
+		add_subview @grid
 
 		@programs = []
 
@@ -127,7 +130,7 @@ class GameGrid < Screen
 			end
 		else
 			if button_down? MsLeft
-				target = @grid.block_under :mouse
+				target = scale(@zoom) { @grid.block_under mouse }
 
 				if target
 					unless @dragged_over
@@ -171,6 +174,12 @@ class GameGrid < Screen
 		end
 	end
 
+	def draw_contents
+		scale @zoom do
+			super
+		end
+	end
+
 	def draw
 		@window.draw_quad(
 			0,      @height - 500, 0xff000000, # top left
@@ -181,29 +190,17 @@ class GameGrid < Screen
 
 		draw_hud
 
-		@window.draw_line(mouse_x, mouse_y, 0xffffffff,
-						  mouse_x + 20, mouse_y + 20, 0xffffffff,
-						  ZOrder::UI + 10)
+		target = @grid.block_under mouse
 
-		hovering_over = @grid.block_under(:mouse)
+		if target
+			@font.draw("#{target.x}, #{target.y}", 10, @height - 30, 0)
 
-		if hovering_over
-			@font.draw("#{hovering_over.x}, #{hovering_over.y}", 10, @height - 30, 0)
+			block_pos = @grid.position_of target
+			rectangle block_pos, @grid.block_size,
+					  0x33ffffff, ZOrder::UI, :additive
 		end
 
-		scale @zoom do
-			@grid.draw
-
-			target = @grid.block_under :mouse
-
-			if target
-				block_pos = @grid.position_of target
-				rectangle block_pos, @grid.block_size,
-						  0x33ffffff, ZOrder::UI, :additive
-			end
-
-			draw_selection_overlay
-		end
+		draw_selection_overlay
 
 		if @paused
 			@window.draw_quad(

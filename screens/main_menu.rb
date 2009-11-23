@@ -6,6 +6,7 @@ require 'grid'
 class MainMenu < Screen
 	attr_reader :grid
 
+	include Gosu
 	include Grid
 	require 'grid/menu'
 

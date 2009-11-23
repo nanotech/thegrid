@@ -4,8 +4,7 @@ module Grid
 	class Block
 		extend Gooey
 
-		def self.draw(window, p, s, z, color, blending=:default)
-			@window = window
+		def self.draw(p, s, z, color, blending=:default)
 			rectangle p, s, color, z, blending
 		end
 	end

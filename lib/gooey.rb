@@ -1,4 +1,16 @@
+require 'gooey/window'
+require 'gooey/view'
+
 module Gooey
+	def mouse
+		$_gooey_x_offset ||= 0
+		$_gooey_y_offset ||= 0
+		$_gooey_scale_factor ||= 1
+
+		Point.new(($window.mouse_x + $_gooey_x_offset) / $_gooey_scale_factor,
+				  ($window.mouse_y + $_gooey_y_offset) / $_gooey_scale_factor)
+	end
+
 	def translate x,y
 		$_gooey_x_offset ||= 0
 		$_gooey_y_offset ||= 0
@@ -6,8 +18,9 @@ module Gooey
 		ox, oy = $_gooey_x_offset, $_gooey_y_offset
 		$_gooey_x_offset += x
 		$_gooey_y_offset += y
-		yield
+		val = yield
 		$_gooey_x_offset, $_gooey_y_offset = ox, oy
+		return val
 	end
 
 	def scale factor
@@ -15,8 +28,9 @@ module Gooey
 
 		original_factor = $_gooey_scale_factor
 		$_gooey_scale_factor *= factor
-		yield
+		val = yield
 		$_gooey_scale_factor = original_factor
+		return val
 	end
 
 	def text font, string, x, y, *args
@@ -55,7 +69,7 @@ module Gooey
 
 		x, y = translate_points [x1,x2,x3,x4], [y1,y2,y3,y4]
 
-		@window.draw_quad(
+		$window.draw_quad(
 			x[0], y[0], c1,
 			x[1], y[1], c2,
 			x[2], y[2], c3,
@@ -78,7 +92,7 @@ module Gooey
 
 		xs, ys = translate_points [x1, x2], [y1, y2]
 
-		@window.draw_line(
+		$window.draw_line(
 			xs[0], ys[0], c1,
 			xs[1], ys[1], c2,
 			*args

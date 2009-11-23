@@ -1,7 +1,7 @@
 module Grid
 	class TextBlock < Block
-		def self.draw(window, p, s, z, color, text, font, blending=:default)
-			super(window, p, s, z, color, blending)
+		def self.draw(p, s, z, color, text, font, blending=:default)
+			super(p, s, z, color, blending)
 
 			pos = p + (s / Vector(2.0,2.0))
 

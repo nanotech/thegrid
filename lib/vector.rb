@@ -99,6 +99,12 @@ class Vector
 	# x and y to keys 0 and 1.
 	def to_a; [@x, @y] end
 	def to_vector; self end
+
+	Zero = self.new(0,0)
+
+	def self.from_vector v
+		self.new(v.x, v.y)
+	end
 end
 
 # Shortcut for Vector.new
