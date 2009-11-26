@@ -39,7 +39,6 @@ class GameGrid < Screen
 		@ai.programs[0].walkable = true
 
 		@selected_program = 0
-		current_program.walkable = true
 
 		find_path
 
@@ -121,9 +120,19 @@ class GameGrid < Screen
 	def find_path
 		@grid[:path] = nil
 		@grid.create :path, [0x66ff00ff, 0x33ff00ff]
-		@pathfinder = Grid::Pathfinder.new(@grid)
+		@grid[:path].walkable = true
 
-		path, closed = @pathfinder.astar(@ai.programs[0].head, current_program.vectors)
+		maybe_paths = @programs.map do |program|
+			# FIXME: have the pathfinder try to get as close as possible
+			#        to the target, even if it'll never get there.
+			program.walkable = true
+			pathfinder = Grid::Pathfinder.new(@grid)
+			maybe_path, closed = pathfinder.astar(@ai.programs[0].head, program.vectors)
+			program.walkable = false
+			maybe_path
+		end
+
+		path = maybe_paths.delete_if { |o| o.nil? }.sort_by { |p| p.length }.first # select the nearest node
 		path.each { |v| grid[:path].turn(v, :on) } if path
 
 		@ai.programs[0].move(path[1] - @ai.programs[0].head) if path and path.length >= 2
