@@ -60,6 +60,11 @@ class GameGrid < Screen
 		end
 	end
 
+	def end_turn
+		find_path
+		@programs.each { |p| p.reset_moves }
+	end
+
 	def select_next_program
 		@selected_program = (@selected_program + 1) % @programs.length
 	end
@@ -70,6 +75,8 @@ class GameGrid < Screen
 			when KbEscape
 				leave
 				@window.close
+			when KbEnter, KbReturn
+				end_turn
 			when KbN
 				select_next_program
 			when KbRight
@@ -120,6 +127,7 @@ class GameGrid < Screen
 		path.each { |v| grid[:path].turn(v, :on) } if path
 
 		@ai.programs[0].move(path[1] - @ai.programs[0].head) if path and path.length >= 2
+		@ai.end_turn
 	end
 
 	def enter

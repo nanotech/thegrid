@@ -28,6 +28,10 @@ class Player
 		@current = @players[user_sym]
 	end
 
+	def end_turn
+		@programs.each { |p| p.reset_moves }
+	end
+
 	def to_s
 		@username
 	end

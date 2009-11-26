@@ -15,12 +15,26 @@ class Program
 								 [0xcc00ff00, 0x99009900],
 								 [0xffcc9900, 0xff990000]) #, head_image)
 
-		method_syms = @chain.methods - Object.new.methods
+		method_syms = @chain.methods - self.methods
 		method_syms.map! { |s| s.to_sym }
 
 		extend SingleForwardable
 		def_delegators :@chain, *method_syms
 		self
+	end
+
+	def move(vect, &callback)
+		distance = vect.manhattan_length
+		if @moved + distance < @moves
+			@moved += distance
+			return @chain.move(vect, &callback)
+		else
+			return false
+		end
+	end
+
+	def reset_moves
+		@moved = 0
 	end
 
 	def to_s
@@ -59,10 +73,12 @@ class Program
 				self.class.traits.each do |k,v|
 					instance_variable_set("@#{k}", v)
 				end
+
+				reset_moves
 			end
 		end
 	end
 
 	# Program attributes are read-only
-	traits :length, :moves, :icon
+	traits :length, :moves, :moved, :icon
 end

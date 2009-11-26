@@ -27,6 +27,8 @@ class Vector
 	def euclidean(v); Math.sqrt((@x - v.x)**2 + (@y - v.y)**2) end
 	def diagonal(v); [(@x - v.x).abs, (@y - v.y).abs].max end
 
+	def manhattan_length; @x.abs + @y.abs end
+
 	# Like Float#to_i.
 	def cutoff; map { |a| a.to_i } end
 	def round; map { |a| a.round } end
