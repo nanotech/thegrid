@@ -23,7 +23,7 @@ class Vector
 	def *(v); Vector.new(@x * v.x, @y * v.y) end
 	def /(v); Vector.new(@x / v.x, @y / v.y) end
 
-	def manhatten(v); (@x - v.x).abs + (@y - v.y).abs end
+	def manhattan(v); (@x - v.x).abs + (@y - v.y).abs end
 	def euclidean(v); Math.sqrt((@x - v.x)**2 + (@y - v.y)**2) end
 	def diagonal(v); [(@x - v.x).abs, (@y - v.y).abs].max end
 

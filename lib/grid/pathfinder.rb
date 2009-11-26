@@ -83,7 +83,7 @@ module Grid
 			sf = singleize finish
 
 			find(start, finish, *args) do |vect, g|
-				h = vect.manhatten sf
+				h = vect.manhattan sf
 				f = g + h
 			end
 		end
@@ -94,7 +94,7 @@ module Grid
 			sf = singleize finish
 
 			find(start, finish, *args) do |vect, g|
-				h = vect.manhatten sf
+				h = vect.manhattan sf
 				f = h
 			end
 		end
