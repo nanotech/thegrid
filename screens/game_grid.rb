@@ -60,12 +60,18 @@ class GameGrid < Screen
 		end
 	end
 
+	def select_next_program
+		@selected_program = (@selected_program + 1) % @programs.length
+	end
+
 	def button_down(id)
 		unless @paused
 			case id
 			when KbEscape
 				leave
 				@window.close
+			when KbN
+				select_next_program
 			when KbRight
 				direction = Vector(1,0)
 			when KbLeft
@@ -91,9 +97,12 @@ class GameGrid < Screen
 				KbRight => Vector( 1, 0)
 			}
 
-			if directions[id] and @grid[:floor][directions[id]+current_program.head]
-				current_program.move directions[id]
-				find_path
+			direction = directions[id]
+
+			if direction and @grid[:floor][direction+current_program.head]
+				unless current_program.move(direction)
+					#select_next_program
+				end
 			end
 		end
 	end
