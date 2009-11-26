@@ -28,6 +28,7 @@ module Grid
 			end
 			@moved = Array.new(@max_size) { start_at }
 			@animated = animated
+			@animations_completed = @max_size
 		end
 
 		# Called by Layer#draw, specifies a different color for the head.
@@ -43,7 +44,7 @@ module Grid
 
 				# Only set if we haven't set already
 				if easer.target != blocks_moved
-					easer.to(blocks_moved, 600)
+					easer.to(blocks_moved, 600) { block_animation_ended }
 				end
 
 				easer.update
@@ -53,18 +54,25 @@ module Grid
 
 		# Like push, but adds relative to the chain's head.
 		# Also animates movement.
-		def move(vect)
+		def move(vect, &on_animation_end)
+			@on_animation_end = on_animation_end
+
 			if @animated
+				@animations_completed = 0
 				last_positions = []
 				@vectors.each_index do |id|
 					last_positions[id] = @vectors[id]
 				end
 			end
 
-			if push vect + head and @animated
-				@vectors.each_index do |id|
-					last_position = last_positions[id] || @vectors[@vectors.size-2]
-					@moved[id] += @vectors[id] - last_position
+			if push vect + head
+				if @animated
+					@vectors.each_index do |id|
+						last_position = last_positions[id] || @vectors[@vectors.size-2]
+						@moved[id] += @vectors[id] - last_position
+					end
+				elsif @on_animation_end
+					@on_animation_end.call
 				end
 			end
 		end
@@ -141,6 +149,13 @@ module Grid
 			return self.send(method) if @vectors.include? vect
 
 			turn vect, :off
+		end
+
+		def block_animation_ended
+			@animations_completed += 1
+			if @on_animation_end and @animations_completed == @vectors.count
+				@on_animation_end.call
+			end
 		end
 	end
 end
