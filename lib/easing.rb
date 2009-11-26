@@ -140,38 +140,45 @@ end
 
 class Easer
 	attr_accessor :value, :change, :time, :duration, :target,
-	              :direction, :method
+	              :direction, :method, :finished
 
-	def initialize(value=0.0, direction=:none, method=:linear, manual_time=false)
+	def initialize(value=0.0, direction=:none, method=:linear, manual_time=false, &on_finish)
 		@value = value.to_f
 		@direction = direction
 		@method = method
 		@manual_time = manual_time
-		self.to(value, 0)
+		self.to(value, 0, &on_finish)
 	end
 
-	def to(target, duration=@duration)
+	def to(target, duration=@duration, &on_finish)
 		@target = target.to_f
 		@change = @target - @value
 		@beginning = @value
 		@duration = duration.to_f
 		@start = (@manual_time) ? 0 : Gosu::milliseconds
 		@time = 0
+		@on_finish = on_finish if on_finish
+		@finished = false
+		yield if block_given?
 	end
 
 	def update(time_change=0)
+		return if @finished
+
 		if @time < @duration
 			@time = Gosu::milliseconds - @start unless @manual_time
 			@time += time_change
 			@time = @duration if @time > @duration
 			@value = @beginning.ease(@direction, @method,
 									 @time, @duration, @change)
+		else
+			@on_finish.call if @on_finish
+			@finished = true
 		end
 	end
 
-	def stopped?
-		@time >= @duration
-	end
+	alias finished? finished
+	alias stopped? finished?
 
 	def to_f; @value.to_f; end
 	def to_i; @value.to_i; end
@@ -179,8 +186,9 @@ class Easer
 end
 
 class VectorEaser
-	def initialize(vect, *args)
+	def initialize(vect, *args, &on_finish)
 		@easers = []
+		reset(on_finish)
 
 		vect.each do |scalar|
 			@easers << Easer.new(scalar, *args)
@@ -189,9 +197,14 @@ class VectorEaser
 
 	def update
 		@easers.each { |e| e.update }
+		if !@finished and @on_finish and @easers.last.finished?
+			@on_finish.call
+			@finished = true
+		end
 	end
 
-	def to(value, *args)
+	def to(value, *args, &on_finish)
+		reset(on_finish)
 		@easers.each_with_index do |e,s|
 			e.to(value[s], *args)
 		end
@@ -208,5 +221,12 @@ class VectorEaser
 		end
 
 		values.to_vector
+	end
+
+	private
+
+	def reset(on_finish)
+		@on_finish = on_finish
+		@finished = false
 	end
 end
