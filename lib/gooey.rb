@@ -39,6 +39,12 @@ module Gooey
 		font.draw string, x, y, *args
 	end
 
+	def relative_text font, string, x, y, *args
+		x = (x + $_gooey_x_offset) * $_gooey_scale_factor
+		y = (y + $_gooey_y_offset) * $_gooey_scale_factor
+		font.draw_rel string, x, y, *args
+	end
+
 	#def rectangle x, y, w, h, c, *args
 	def rectangle *args
 		if args[0].is_a? Vector

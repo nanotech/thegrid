@@ -22,6 +22,7 @@ class MainMenu < Screen
 		@menu.add 'Play Online' => :online_index
 		@menu.add 'Map Editor' => :map_editor
 		@menu.add 'Check for Updates' => :check_for_updates
+		add_subview @menu
 	end
 
 	def button_down(id)
@@ -40,8 +41,6 @@ class MainMenu < Screen
 		@window.draw_line(mouse_x, mouse_y, 0xffffffff,
 						  mouse_x + 20, mouse_y + 20, 0xffffffff,
 						  ZOrder::UI + 10)
-
-		@menu.draw
 
 		@font.draw "Welcome, #{Player.current}!", 24, @height - 70, ZOrder::UI
 	end
