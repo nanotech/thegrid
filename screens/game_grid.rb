@@ -174,11 +174,14 @@ class GameGrid < Screen
 		end
 
 		path = maybe_paths.delete_if { |o| o.nil? }.sort_by { |p| p.length }.first # select the nearest node
-		path = path[0..-2] # don't collide with the target
-		path.each { |v| grid[:path].turn(v, :on) } if path
 
-		if path and path.length >= 2
-			move_ai(ai_program, path)
+		if path
+			path = path[0..-2] # don't collide with the target
+			path.each { |v| grid[:path].turn(v, :on) }
+
+			if path.length >= 2
+				move_ai(ai_program, path)
+			end
 		end
 
 		ai_program.walkable = false
