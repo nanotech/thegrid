@@ -112,6 +112,8 @@ end
 # Shortcut for Vector.new
 def Vector(*args); Vector.new(*args) end
 
+require 'lib/helpers'
+
 # Vector-related helper methods.
 class Array
 	def to_vector
@@ -125,6 +127,29 @@ class Array
 	def x=(v); self[0] = v end
 	def y=(v); self[1] = v end
 	def z=(v); self[2] = v end
+
+	def group_vectors_by_dimension
+		dimension = nil
+
+		self.split_by do |a,b|
+			if dimension.nil?
+				if a.x == b.x
+					dimension = :x
+				elsif a.y == b.y
+					dimension = :y
+				end
+
+				false
+			else
+				if (dimension == :x and a.x != b.x) or (dimension == :y and a.y != b.y)
+					dimension = nil
+					true
+				else
+					false
+				end
+			end
+		end
+	end
 end
 
 class Numeric

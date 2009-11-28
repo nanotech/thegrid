@@ -47,6 +47,26 @@ class String
 	end
 end
 
+class Array
+	def split_by(&block)
+		previous = self.first
+		active = [previous]
+		split = [active]
+
+		self[1..-1].each do |x|
+			if yield(previous, x)
+				active = []
+				split << active
+			end
+
+			active << x
+			previous = x
+		end
+
+		return split
+	end
+end
+
 # Automatically require and create an object based on it's name
 def create(item, *args)
 	require item.to_s.underscore
