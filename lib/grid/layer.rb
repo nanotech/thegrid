@@ -6,6 +6,8 @@ module Grid
 		attr_accessor :blocks, :color, :zlevel, :blending, :fill, :helper,
 		              :walkable
 
+		alias walkable? walkable
+
 		include Enumerable
 
 		def initialize(grid, color=nil, fill=false)

@@ -92,6 +92,10 @@ module Grid
 			vect * @increment + @position
 		end
 
+		def is_vector_walkable?(vect)
+			self.all? { |_, layer| layer.walkable? or !layer[vect] }
+		end
+
 		def each
 			@layers.each do |name, layer|
 				yield name, layer unless @exclude.include? name

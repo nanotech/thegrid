@@ -36,7 +36,7 @@ class GameGrid < Screen
 		gridize_programs @ai.programs, false
 		gridize_programs Player.current.programs
 
-		@ai.programs[0].walkable = true
+		@ai.programs[0].walkable = false
 
 		@selected_program = 0
 
@@ -105,9 +105,13 @@ class GameGrid < Screen
 
 			direction = directions[id]
 
-			if direction and @grid[:floor][direction+current_program.head]
-				unless current_program.move(direction)
-					#select_next_program
+			if direction
+				new_vector = direction + current_program.head
+
+				if @grid[:floor][new_vector] and @grid.is_vector_walkable?(new_vector)
+					unless current_program.move(direction)
+						#select_next_program
+					end
 				end
 			end
 		end
@@ -121,6 +125,7 @@ class GameGrid < Screen
 		@grid[:path] = nil
 		@grid.create :path, [0x66ff00ff, 0x33ff00ff]
 		@grid[:path].walkable = true
+		@ai.programs[0].walkable = true
 
 		maybe_paths = @programs.map do |program|
 			# FIXME: have the pathfinder try to get as close as possible
@@ -136,6 +141,7 @@ class GameGrid < Screen
 		path.each { |v| grid[:path].turn(v, :on) } if path
 
 		@ai.programs[0].move(path[1] - @ai.programs[0].head) if path and path.length >= 2
+		@ai.programs[0].walkable = false
 		@ai.end_turn
 	end
 
@@ -166,7 +172,6 @@ class GameGrid < Screen
 							current_program.walkable = false
 							head.walkable = true
 							@selected_program = @programs.index(head)
-							find_path
 							return # FIXME
 						end
 
@@ -176,7 +181,6 @@ class GameGrid < Screen
 					if target != @dragged_over
 						@dragged_over = target
 						@grid[:wall].turn(target, @drag_mode) if target
-						find_path
 					end
 				end
 			elsif !button_down? MsLeft and @dragged_over
