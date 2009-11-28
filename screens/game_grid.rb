@@ -65,7 +65,7 @@ class GameGrid < Screen
 
 	def update_movement_layer
 		@grid[:movement] = nil
-		@grid.create :movement, [0x66ffffff, 0x33ffffff]
+		@grid.create :movement, [0x1affffff, 0x2affffff]
 		@grid[:movement].walkable = true
 		program = selected_program
 
