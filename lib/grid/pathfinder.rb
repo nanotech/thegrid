@@ -110,7 +110,7 @@ module Grid
 		end
 
 		# The search algorithm.
-		def find(start, finish, costs={})
+		def find(start, finish, costs={}, max_cost=nil)
 			return nil if finished start, finish
 
 			open_set = PriorityQueue.new # all nodes that are still worth examining
@@ -129,7 +129,9 @@ module Grid
 				next if closed_set[spot.to_a] # already checked
 				newpath = path_so_far + [spot]
 
-				return [newpath, closed_set] if finished spot, finish
+				if (max_cost and cost_so_far >= max_cost) or finished spot, finish
+					return [newpath, closed_set]
+				end
 
 				each_neighbor_of(spot) do |newspot|
 					node = self[newspot]
