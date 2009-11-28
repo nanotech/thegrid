@@ -71,7 +71,7 @@ module Grid
 
 		# Slow, finds the best path, and 
 		# usually looks nice.
-		def djikstra(*args)
+		def dijkstra(*args)
 			find(*args) do |vect, g|
 				f = g
 			end

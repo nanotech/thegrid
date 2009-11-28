@@ -72,7 +72,7 @@ class GameGrid < Screen
 		raise RuntimeError.new('The selected program must be walkable!') unless program.walkable?
 
 		pathfinder = Grid::Pathfinder.new(@grid)
-		path, closed = pathfinder.djikstra(program.head, nil, {}, program.moves - program.moved)
+		path, closed = pathfinder.dijkstra(program.head, nil, {}, program.moves - program.moved)
 
 		if closed
 			closed = closed.keys.map { |a| a.to_vector }

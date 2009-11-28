@@ -27,7 +27,7 @@ pf = pathfinder
 Benchmark.bmbm do |x|
 	x.report('A*') { pf.astar(*params) }
 	x.report('Greedy') { pf.greedy(*params) }
-	x.report('Dijkstra') { pf.djikstra(*params) }
+	x.report('Dijkstra') { pf.dijkstra(*params) }
 end
 
 __END__
