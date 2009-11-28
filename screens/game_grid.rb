@@ -36,9 +36,7 @@ class GameGrid < Screen
 		gridize_programs @ai.programs, false
 		gridize_programs Player.current.programs
 
-		@ai.programs[0].walkable = false
-
-		@selected_program = 0
+		self.selected_program = @programs.first
 
 		find_path
 
@@ -60,12 +58,45 @@ class GameGrid < Screen
 	end
 
 	def end_turn
-		find_path
 		@programs.each { |p| p.reset_moves }
+		find_path
+		update_movement_layer
+	end
+
+	def update_movement_layer
+		@grid[:movement] = nil
+		@grid.create :movement, [0x66ffffff, 0x33ffffff]
+		@grid[:movement].walkable = true
+		program = selected_program
+
+		raise RuntimeError.new('The selected program must be walkable!') unless program.walkable?
+
+		pathfinder = Grid::Pathfinder.new(@grid)
+		path, closed = pathfinder.djikstra(program.head, nil, {}, program.moves - program.moved)
+
+		if closed
+			closed = closed.keys.map { |a| a.to_vector }
+			closed.each { |v| grid[:movement].turn(v, :on) } if path
+		end
+	end
+
+	def selected_program
+		@selected_program ||= 0
+		@programs[@selected_program]
+	end
+
+	def selected_program=(program)
+		index = @programs.index(program)
+		raise ArgumentError.new("program must be an active program") unless index
+
+		selected_program.walkable = false if @selected_program
+		program.walkable = true
+		@selected_program = index
+		update_movement_layer
 	end
 
 	def select_next_program
-		@selected_program = (@selected_program + 1) % @programs.length
+		self.selected_program = @programs[(@selected_program + 1) % @programs.length]
 	end
 
 	def button_down(id)
@@ -106,10 +137,12 @@ class GameGrid < Screen
 			direction = directions[id]
 
 			if direction
-				new_vector = direction + current_program.head
+				new_vector = direction + selected_program.head
 
 				if @grid[:floor][new_vector] and @grid.is_vector_walkable?(new_vector)
-					unless current_program.move(direction)
+					if selected_program.move(direction)
+						update_movement_layer
+					else
 						#select_next_program
 					end
 				end
@@ -117,31 +150,38 @@ class GameGrid < Screen
 		end
 	end
 
-	def current_program
-		@programs[@selected_program]
+	def move_ai(program, path)
+		path.each { |n| program.move(n - program.head) }
 	end
 
 	def find_path
 		@grid[:path] = nil
 		@grid.create :path, [0x66ff00ff, 0x33ff00ff]
 		@grid[:path].walkable = true
-		@ai.programs[0].walkable = true
+
+		ai_program = @ai.programs[0]
+		ai_program.walkable = true
 
 		maybe_paths = @programs.map do |program|
 			# FIXME: have the pathfinder try to get as close as possible
 			#        to the target, even if it'll never get there.
+			was_walkable = program.walkable?
 			program.walkable = true
 			pathfinder = Grid::Pathfinder.new(@grid)
-			maybe_path, closed = pathfinder.astar(@ai.programs[0].head, program.vectors)
-			program.walkable = false
+			maybe_path, closed = pathfinder.astar(ai_program.head, program.vectors)
+			program.walkable = was_walkable
 			maybe_path
 		end
 
 		path = maybe_paths.delete_if { |o| o.nil? }.sort_by { |p| p.length }.first # select the nearest node
+		path = path[0..-2] # don't collide with the target
 		path.each { |v| grid[:path].turn(v, :on) } if path
 
-		@ai.programs[0].move(path[1] - @ai.programs[0].head) if path and path.length >= 2
-		@ai.programs[0].walkable = false
+		if path and path.length >= 2
+			move_ai(ai_program, path)
+		end
+
+		ai_program.walkable = false
 		@ai.end_turn
 	end
 
@@ -169,9 +209,7 @@ class GameGrid < Screen
 						head = @programs.find_all { |p| p.head == target }.first
 
 						if head
-							current_program.walkable = false
-							head.walkable = true
-							@selected_program = @programs.index(head)
+							self.selected_program = head
 							return # FIXME
 						end
 
@@ -247,7 +285,7 @@ class GameGrid < Screen
 	end
 
 	def draw_selection_overlay
-		tl = @grid.position_of @programs[@selected_program].chain.head
+		tl = @grid.position_of selected_program.chain.head
 		tr = tl + Vector(@grid.block_size.x, 0)
 		bl = tl + Vector(0, @grid.block_size.x)
 		br = tl + @grid.block_size
