@@ -205,7 +205,7 @@ class GameGrid < Screen
 			end
 		else
 			if button_down? MsLeft
-				target = scale(@zoom) { @grid.block_under mouse }
+				target = scale(@zoom) { @grid.grid_vect_from_world_vect mouse }
 
 				if target
 					unless @dragged_over
@@ -261,7 +261,7 @@ class GameGrid < Screen
 
 		draw_hud
 
-		target = @grid.block_under mouse
+		target = @grid.grid_vect_from_world_vect mouse
 
 		if target
 			@font.draw("#{target.x}, #{target.y}", 10, @height - 30, 0)

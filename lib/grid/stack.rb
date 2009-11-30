@@ -74,7 +74,7 @@ module Grid
 		end
 
 		# Get a grid vector from a world vector.
-		def block_under(vect)
+		def grid_vect_from_world_vect(vect)
 			block_area = @area
 			total_padding = (@padding * (block_area - 1))
 			pixel_area = (block_area * @block_size) + total_padding
