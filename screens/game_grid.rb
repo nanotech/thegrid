@@ -49,7 +49,7 @@ class GameGrid < Screen
 
 	def gridize_programs(programs)
 		programs.map do |p|
-			random_vector = Vector.new(rand(grid.area.x),rand(grid.area.y))
+			random_vector = Vector.rand(@grid.area)
 			p.place_on_grid_at_position @grid, random_vector
 			p.chain.zlevel = 100
 			p.walkable = false

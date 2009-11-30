@@ -107,6 +107,10 @@ class Vector
 	def self.from_vector v
 		self.new(v.x, v.y)
 	end
+
+	def self.rand max
+		self.new(Kernel::rand(max.x),Kernel::rand(max.y))
+	end
 end
 
 # Shortcut for Vector.new
