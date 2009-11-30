@@ -17,7 +17,7 @@ class Program
 
 	def move(vect, &callback)
 		distance = vect.manhattan_length
-		if @moved + distance < @moves
+		if @moved + distance <= @moves
 			@moved += distance
 			return @chain.move(vect, &callback)
 		else

@@ -129,7 +129,7 @@ module Grid
 				next if closed_set[spot.to_a] # already checked
 				newpath = path_so_far + [spot]
 
-				if (max_cost and cost_so_far >= max_cost) or finished spot, finish
+				if (max_cost and cost_so_far > max_cost) or finished spot, finish
 					return [newpath, closed_set]
 				end
 
