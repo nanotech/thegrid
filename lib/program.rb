@@ -7,20 +7,12 @@ class Program
 
 	attr_reader :chain, :position
 
-	def gridize sector
-		random_vector = Vector(rand(sector.area.x),rand(sector.area.y))
-		# head_image = Image.new(@sector.window, 'icon.png', false)
-
-		@chain = Grid::Chain.new(sector, random_vector, @length, :animated,
-								 [0xcc00ff00, 0x99009900],
-								 [0xffcc9900, 0xff990000]) #, head_image)
-
-		method_syms = @chain.methods - self.methods
-		method_syms.map! { |s| s.to_sym }
-
-		extend SingleForwardable
-		def_delegators :@chain, *method_syms
-		self
+	def place_on_grid_at_position grid, position
+		# head_image = Image.new($window, 'icon.png', false)
+		@chain = nil unless @chain and grid == @chain.grid
+		prepare_for_grid(grid, position) unless @chain
+		grid.manage :"program#{grid.layers.length}" => self
+		return self
 	end
 
 	def move(vect, &callback)
@@ -81,4 +73,19 @@ class Program
 
 	# Program attributes are read-only
 	traits :length, :moves, :moved, :icon
+
+	private
+
+	def prepare_for_grid grid, position
+		@chain = Grid::Chain.new(grid, position, @length, :animated,
+								 [0xcc00ff00, 0x99009900],
+								 [0xffcc9900, 0xff990000]) #, head_image)
+
+		method_syms = @chain.methods - self.methods
+		method_syms.map! { |s| s.to_sym }
+
+		extend SingleForwardable
+		def_delegators :@chain, *method_syms
+		return self
+	end
 end

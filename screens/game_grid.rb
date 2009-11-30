@@ -28,15 +28,15 @@ class GameGrid < Screen
 
 		add_subview @grid
 
-		@programs = []
-
 		@ai = AIPlayer.new 'Sparky'
 		@ai.programs = [Programs::Cookie.new]
 
-		gridize_programs @ai.programs, false
-		gridize_programs Player.current.programs
+		@player = Player.current
 
-		self.selected_program = @programs.first
+		gridize_programs @ai.programs
+		gridize_programs @player.programs
+
+		self.selected_program = @player.programs.first
 
 		find_path
 
@@ -47,18 +47,18 @@ class GameGrid < Screen
 		@zoom = 1
 	end
 
-	def gridize_programs(programs, add=true)
-		programs.each_with_index do |p,i|
-			p.gridize @grid
-			@grid.manage :"program#{@grid.layers.length}" => p
+	def gridize_programs(programs)
+		programs.map do |p|
+			random_vector = Vector.new(rand(grid.area.x),rand(grid.area.y))
+			p.place_on_grid_at_position @grid, random_vector
 			p.chain.zlevel = 100
 			p.walkable = false
-			@programs << p if add
+			p
 		end
 	end
 
 	def end_turn
-		@programs.each { |p| p.reset_moves }
+		@player.end_turn
 		find_path
 		update_movement_layer
 	end
@@ -82,11 +82,11 @@ class GameGrid < Screen
 
 	def selected_program
 		@selected_program ||= 0
-		@programs[@selected_program]
+		@player.programs[@selected_program]
 	end
 
 	def selected_program=(program)
-		index = @programs.index(program)
+		index = @player.programs.index(program)
 		raise ArgumentError.new("program must be an active program") unless index
 
 		selected_program.walkable = false if @selected_program
@@ -96,7 +96,7 @@ class GameGrid < Screen
 	end
 
 	def select_next_program
-		self.selected_program = @programs[(@selected_program + 1) % @programs.length]
+		self.selected_program = @player.programs[(@selected_program + 1) % @player.programs.length]
 	end
 
 	def button_down(id)
@@ -162,7 +162,7 @@ class GameGrid < Screen
 		ai_program = @ai.programs[0]
 		ai_program.walkable = true
 
-		maybe_paths = @programs.map do |program|
+		maybe_paths = @player.programs.map do |program|
 			# FIXME: have the pathfinder try to get as close as possible
 			#        to the target, even if it'll never get there.
 			was_walkable = program.walkable?
@@ -209,7 +209,7 @@ class GameGrid < Screen
 
 				if target
 					unless @dragged_over
-						head = @programs.find_all { |p| p.head == target }.first
+						head = @player.programs.find_all { |p| p.head == target }.first
 
 						if head
 							self.selected_program = head
