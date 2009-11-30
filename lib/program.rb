@@ -10,8 +10,9 @@ class Program
 	def place_on_grid_at_position grid, position
 		# head_image = Image.new($window, 'icon.png', false)
 		@chain = nil unless @chain and grid == @chain.grid
+		@layer_name = :"program#{grid.layers.length}"
 		prepare_for_grid(grid, position) unless @chain
-		grid.manage :"program#{grid.layers.length}" => self
+		grid.manage @layer_name => self
 		return self
 	end
 
@@ -23,6 +24,15 @@ class Program
 		else
 			return false
 		end
+	end
+
+	def active?; !@chain.nil?; end
+
+	def deactivate
+		reset_moves
+		@chain.grid.unmanage @layer_name
+		@chain = nil
+		@layer_name = nil
 	end
 
 	def reset_moves

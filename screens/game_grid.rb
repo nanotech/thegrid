@@ -33,12 +33,12 @@ class GameGrid < Screen
 
 		@player = Player.current
 
-		gridize_programs @ai.programs
-		gridize_programs @player.programs
+		@grid.create :upload_nodes, [0xccffffff, 0xffffffff]
+		@grid[:upload_nodes].zlevel = 10
+		@grid[:upload_nodes].walkable = true
+		Array.new(@player.programs.length) { @grid[:upload_nodes].turn Vector.rand(@grid.area), :on }
 
-		self.selected_program = @player.programs.first
-
-		find_path
+		activate_programs @ai.programs
 
 		@dragged_over = nil
 		@drag_mode = true
@@ -47,14 +47,15 @@ class GameGrid < Screen
 		@zoom = 1
 	end
 
-	def gridize_programs(programs)
-		programs.map do |p|
-			random_vector = Vector.rand(@grid.area)
-			p.place_on_grid_at_position @grid, random_vector
-			p.chain.zlevel = 100
-			p.walkable = false
-			p
-		end
+	def activate_program program, position
+		program.place_on_grid_at_position @grid, position
+		program.chain.zlevel = 100
+		program.walkable = false
+		program
+	end
+
+	def activate_programs(programs)
+		programs.map { |p| activate_program p, Vector.rand(@grid.area) }
 	end
 
 	def end_turn
@@ -81,8 +82,7 @@ class GameGrid < Screen
 	end
 
 	def selected_program
-		@selected_program ||= 0
-		@player.programs[@selected_program]
+		@player.programs[@selected_program] if @selected_program
 	end
 
 	def selected_program=(program)
@@ -92,6 +92,7 @@ class GameGrid < Screen
 		selected_program.walkable = false if @selected_program
 		program.walkable = true
 		@selected_program = index
+		@selected_vect = program.head
 		update_movement_layer
 	end
 
@@ -136,7 +137,7 @@ class GameGrid < Screen
 
 			direction = directions[id]
 
-			if direction
+			if direction and selected_program
 				new_vector = direction + selected_program.head
 
 				if @grid[:floor][new_vector] and @grid.is_vector_walkable?(new_vector)
@@ -209,7 +210,18 @@ class GameGrid < Screen
 
 				if target
 					unless @dragged_over
-						head = @player.programs.find_all { |p| p.head == target }.first
+						is_upload_node = @grid[:upload_nodes][target]
+
+						if is_upload_node
+							program = @player.inactive_programs.first
+
+							if program
+								@grid[:upload_nodes].turn target, :off
+								activate_program program, target
+							end
+						end
+
+						head = @player.active_programs.find { |p| p.head == target }
 
 						if head
 							self.selected_program = head
@@ -288,7 +300,8 @@ class GameGrid < Screen
 	end
 
 	def draw_selection_overlay
-		tl = @grid.position_of selected_program.chain.head
+		return unless @selected_vect
+		tl = @grid.position_of @selected_vect
 		tr = tl + Vector(@grid.block_size.x, 0)
 		bl = tl + Vector(0, @grid.block_size.x)
 		br = tl + @grid.block_size

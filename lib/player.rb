@@ -28,6 +28,14 @@ class Player
 		@current = @players[user_sym]
 	end
 
+	def active_programs
+		@programs.find_all { |p| p.active? }
+	end
+
+	def inactive_programs
+		@programs.find_all { |p| !p.active? }
+	end
+
 	def end_turn
 		@programs.each { |p| p.reset_moves }
 	end
