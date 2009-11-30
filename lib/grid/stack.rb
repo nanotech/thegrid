@@ -117,7 +117,7 @@ module Grid
 		end
 
 		# Load a Stack from a YAML file.
-		def load
+		def load_from_disk
 			if File.exists? 'save.yml'
 				layers = File.open('save.yml') { |yml| YAML.load(yml) }
 

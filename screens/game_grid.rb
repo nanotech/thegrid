@@ -23,7 +23,7 @@ class GameGrid < Screen
 
 		@grid = Sector.new @window, Vector(18, 8), Vector(20,20), 60, 6
 
-		@grid.load
+		@grid.load_from_disk
 		@grid.font = @font
 
 		add_subview @grid

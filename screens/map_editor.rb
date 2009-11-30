@@ -17,7 +17,7 @@ class MapEditor < Screen
 		@font = Font.new(@window, Gosu::default_font_name, 20)
 		@grid = Sector.new @window, Vector(18, 8), Vector(20,20), 60, 6
 
-		@grid.load
+		@grid.load_from_disk
 		@grid.font = @font
 
 		@dragged_over = nil
