@@ -14,14 +14,13 @@ class Vector
 	def join(other)
 		x = yield @x, other.x
 		y = yield @y, other.y
-		Vector.new(x,y)
+		self.class.new(x,y)
 	end
 
-	#def +(v); Vector.new(@x + v.x, @y + v.y) end
-	def +(v); Vector.new(@x + v.x, @y + v.y) end
-	def -(v); Vector.new(@x - v.x, @y - v.y) end
-	def *(v); Vector.new(@x * v.x, @y * v.y) end
-	def /(v); Vector.new(@x / v.x, @y / v.y) end
+	def +(v); self.class.new(@x + v.x, @y + v.y) end
+	def -(v); self.class.new(@x - v.x, @y - v.y) end
+	def *(v); self.class.new(@x * v.x, @y * v.y) end
+	def /(v); self.class.new(@x / v.x, @y / v.y) end
 
 	def manhattan(v); (@x - v.x).abs + (@y - v.y).abs end
 	def euclidean(v); Math.sqrt((@x - v.x)**2 + (@y - v.y)**2) end
@@ -32,7 +31,7 @@ class Vector
 	# Like Float#to_i.
 	def cutoff; map { |a| a.to_i } end
 	def round; map { |a| a.round } end
-	def reverse; Vector.new(@y, @x) end
+	def reverse; self.class.new(@y, @x) end
 
 	def [](index)
 		case index
@@ -49,7 +48,7 @@ class Vector
 	end
 
 	def map
-		Vector.new yield(@x), yield(@y)
+		self.class.new yield(@x), yield(@y)
 	end
 
 	# Comparable operators
@@ -71,7 +70,7 @@ class Vector
 	def ==(v); compare(v, :==) end
 
 	def eql?(o)
-		o.is_a?(Vector) && self == o
+		o.kind_of?(self.class) && self == o
 	end
 
 	def hash
@@ -88,13 +87,13 @@ class Vector
 	end
 
 	def compare(v, with)
-		if v.is_a? Vector
+		if v.kind_of? Vector
 			@x.send(with, v.x) and
 			@y.send(with, v.y)
 		end
 	end
 
-	def inspect; "Vector(#{@x},#{@y})" end
+	def inspect; "#{self.class}(#{@x},#{@y})" end
 	def to_s; inspect end
 
 	# Converts a Vector to an Array, setting
