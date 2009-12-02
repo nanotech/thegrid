@@ -2,6 +2,7 @@ require 'grid'
 require 'gameplay'
 require 'gooey'
 require 'ai'
+require 'views/glow_block'
 
 #
 # The main game screen.
@@ -36,6 +37,7 @@ class GameGrid < Screen
 		@grid.create :upload_nodes, [0xccffffff, 0xffffffff]
 		@grid[:upload_nodes].zlevel = 10
 		@grid[:upload_nodes].walkable = true
+		@grid[:upload_nodes].block_class = GlowBlock
 		Array.new(@player.programs.length) { @grid[:upload_nodes].turn Vector.rand(@grid.area), :on }
 
 		activate_programs @ai.programs
