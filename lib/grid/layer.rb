@@ -4,7 +4,7 @@ module Grid
 	class Layer < Gooey::View
 		attr_reader :grid
 		attr_accessor :blocks, :color, :zlevel, :blending, :fill, :helper,
-		              :walkable
+		              :walkable, :block_class
 
 		alias walkable? walkable
 
@@ -19,9 +19,9 @@ module Grid
 			@fill = fill
 			@helper = nil
 			@walkable = false
+			@block_class = Block
 
 			@color = @color.expand_gradient if @color
-
 			@color ||= [0x44ffffff, 0x44ffffff, 0x33ffffff, 0x33ffffff]
 
 			@blocks = Array.new(@grid.area.x) do
@@ -77,7 +77,7 @@ module Grid
 			# Check to see if the helper wants to manually
 			# define a color for this block
 
-			Block.draw(pixel, @grid.block_size, @zlevel, @color, @blending)
+			@block_class.draw(pixel, @grid.block_size, @zlevel, @color, @blending)
 		end
 
 		# Converts the layer into ascii art.
