@@ -34,14 +34,12 @@ module Gooey
 	end
 
 	def text font, string, x, y, *args
-		x = (x + $_gooey_x_offset) * $_gooey_scale_factor
-		y = (y + $_gooey_y_offset) * $_gooey_scale_factor
+		x, y = translate_xy x, y
 		font.draw string, x, y, *args
 	end
 
 	def relative_text font, string, x, y, *args
-		x = (x + $_gooey_x_offset) * $_gooey_scale_factor
-		y = (y + $_gooey_y_offset) * $_gooey_scale_factor
+		x, y = translate_xy x, y
 		font.draw_rel string, x, y, *args
 	end
 
@@ -105,7 +103,23 @@ module Gooey
 		)
 	end
 
-	private
+	def image image_data, x, y, z, factor_x=1, factor_y=1, color=0xffffffff, mode=:default
+		x, y = translate_xy x, y
+		image_data.draw(x, y, z, factor_x, factor_y, color, mode)
+	end
+
+	def clip frame, &block
+		x, y = translate_xy frame.x, frame.y
+		$window.clip_to(x, y, frame.width, frame.height) do
+			yield
+		end
+	end
+
+	def translate_xy x, y
+		x = (x + $_gooey_x_offset) * $_gooey_scale_factor
+		y = (y + $_gooey_y_offset) * $_gooey_scale_factor
+		return x, y
+	end
 
 	def translate_points xs, ys
 		$_gooey_x_offset ||= 0
