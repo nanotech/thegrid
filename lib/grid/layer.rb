@@ -66,7 +66,7 @@ module Grid
 			@blocks.each_with_index do |column, x|
 				if column
 					column.each_with_index do |block, y|
-						vect = Vector(x,y)
+						vect = Vector[x,y]
 						draw_block(vect, vect * @grid.increment) if block
 					end
 				end

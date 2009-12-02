@@ -11,6 +11,10 @@ class Vector
 		@y = y
 	end
 
+	class << self
+		alias [] new
+	end
+
 	def join(other)
 		x = yield @x, other.x
 		y = yield @y, other.y
