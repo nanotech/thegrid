@@ -4,7 +4,7 @@ module Gooey
 	module Viewish
 		include Gooey
 
-		attr_accessor :frame
+		attr_accessor :frame, :clips_to_bounds
 		attr_reader :subviews, :superview
 
 		# Shortcuts
@@ -14,6 +14,7 @@ module Gooey
 			@frame = frame
 			@subviews = []
 			@superview = nil
+			@clips_to_bounds = false
 		end
 
 		def bounds
@@ -64,7 +65,11 @@ module Gooey
 		end
 
 		def draw_contents
-			draw
+			if @clips_to_bounds
+				clip(frame) { draw }
+			else
+				draw
+			end
 			draw_subviews
 		end
 	end
