@@ -16,6 +16,12 @@ class Program
 		return self
 	end
 
+	def attack(program)
+		# FIXME: ensure that the program given is actually
+		#        within range, and is not an ally.
+		program.chain.shift
+	end
+
 	def move(vect, &callback)
 		distance = vect.manhattan_length
 		if @moved + distance <= @moves
@@ -42,8 +48,6 @@ class Program
 	def to_s
 		self.class.name
 	end
-
-	private
 
 	# Metaprogramming stuff originally from:
 	# why's (poignant) guide to ruby, chapter 6

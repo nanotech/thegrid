@@ -47,6 +47,7 @@ class GameGrid < Screen
 		@paused = false
 		@entered_at = milliseconds
 		@zoom = 1
+		@attack_vectors = []
 	end
 
 	def activate_program program, position
@@ -71,6 +72,7 @@ class GameGrid < Screen
 		@grid.create :movement, [0x1affffff, 0x2affffff]
 		@grid[:movement].walkable = true
 		program = selected_program
+		return unless program and program.active?
 
 		raise RuntimeError.new('The selected program must be walkable!') unless program.walkable?
 
@@ -80,6 +82,37 @@ class GameGrid < Screen
 		if closed
 			closed = closed.keys.map { |a| a.to_vector }
 			closed.each { |v| grid[:movement].turn(v, :on) } if path
+		end
+
+		if program.moves - program.moved == 0
+			update_attack_layer
+		else
+			clear_attack_layer
+		end
+	end
+
+	def clear_attack_layer
+		@grid[:attack_range] = nil
+	end
+
+	def update_attack_layer
+		clear_attack_layer
+		@grid.create :attack_range, [0x66ff0000, 0x33ff0000]
+		@grid[:attack_range].zlevel = 5
+		@grid[:attack_range].walkable = true
+		@grid[:attack_range].block_class = GlowBlock
+		program = selected_program
+
+		pathfinder = Grid::Pathfinder.new(Sector.new(
+			$window, @grid.area, @grid.position, @grid.block_size, @grid.padding
+		))
+		path, closed = pathfinder.dijkstra(program.head, nil, {}, 2)
+
+		if closed
+			@attack_vectors = closed.keys.map { |a| a.to_vector }
+			exclude = program.vectors
+			@attack_vectors.reject! { |v| exclude.include? v }
+			@attack_vectors.each { |v| @grid[:attack_range].turn(v, :on) if v != program.head }
 		end
 	end
 
@@ -99,7 +132,14 @@ class GameGrid < Screen
 	end
 
 	def select_next_program
-		self.selected_program = @player.programs[(@selected_program + 1) % @player.programs.length]
+		return unless @selected_program
+		self.selected_program = @player.active_programs[(@selected_program + 1) % @player.active_programs.length]
+	end
+
+	def attackable_vectors
+		@ai.active_programs.map do |p|
+			p.vectors.find { |v| @attack_vectors.include?(v) and v }
+		end.compact
 	end
 
 	def button_down(id)
@@ -139,12 +179,14 @@ class GameGrid < Screen
 
 			direction = directions[id]
 
-			if direction and selected_program
-				new_vector = direction + selected_program.head
+			program = selected_program
+			if direction and program
+				new_vector = direction + program.head
 
 				if @grid[:floor][new_vector] and @grid.is_vector_walkable?(new_vector)
-					if selected_program.move(direction)
+					if program.move(direction)
 						update_movement_layer
+						@selected_vect = program.head
 					else
 						#select_next_program
 					end
@@ -163,31 +205,36 @@ class GameGrid < Screen
 		@grid[:path].walkable = true
 
 		ai_program = @ai.programs[0]
-		ai_program.walkable = true
 
-		maybe_paths = @player.programs.map do |program|
-			# FIXME: have the pathfinder try to get as close as possible
-			#        to the target, even if it'll never get there.
-			was_walkable = program.walkable?
-			program.walkable = true
-			pathfinder = Grid::Pathfinder.new(@grid)
-			maybe_path, closed = pathfinder.astar(ai_program.head, program.vectors)
-			program.walkable = was_walkable
-			maybe_path
-		end
+		if ai_program.head
+			ai_program.walkable = true
 
-		path = maybe_paths.delete_if { |o| o.nil? }.sort_by { |p| p.length }.first # select the nearest node
-
-		if path
-			path = path[0..-2] # don't collide with the target
-			path.each { |v| grid[:path].turn(v, :on) }
-
-			if path.length >= 2
-				move_ai(ai_program, path)
+			maybe_paths = @player.programs.map do |program|
+				# FIXME: have the pathfinder try to get as close as possible
+				#        to the target, even if it'll never get there.
+				next unless program.active?
+				was_walkable = program.walkable?
+				program.walkable = true
+				pathfinder = Grid::Pathfinder.new(@grid)
+				maybe_path, closed = pathfinder.astar(ai_program.head, program.vectors)
+				program.walkable = was_walkable
+				maybe_path
 			end
+
+			path = maybe_paths.delete_if { |o| o.nil? }.sort_by { |p| p.length }.first # select the nearest node
+
+			if path
+				path = path[0..-2] # don't collide with the target
+				path.each { |v| grid[:path].turn(v, :on) }
+
+				if path.length >= 2
+					move_ai(ai_program, path)
+				end
+			end
+
+			ai_program.walkable = false
 		end
 
-		ai_program.walkable = false
 		@ai.end_turn
 	end
 
@@ -201,6 +248,38 @@ class GameGrid < Screen
 		@grid.save([:wall,:floor])
 	end
 
+	def act_on_vector target
+		is_upload_node = @grid[:upload_nodes][target]
+
+		if is_upload_node
+			program = @player.inactive_programs.first
+
+			if program
+				@grid[:upload_nodes].turn target, :off
+				activate_program program, target
+				self.selected_program = program
+				return :uploaded
+			end
+		end
+
+		is_attackable_vector = attackable_vectors.include? target
+
+		if is_attackable_vector
+			enemy = @ai.active_programs.find { |prog| prog.vectors.include? target }
+			selected_program.attack enemy
+			return :attacked
+		end
+
+		head = @player.active_programs.find { |p| p.head == target }
+
+		if head
+			self.selected_program = head
+			return :selected
+		end
+
+		return false
+	end
+
 	def update
 		if @paused
 			if milliseconds - @entered_at > 1000
@@ -212,25 +291,9 @@ class GameGrid < Screen
 
 				if target
 					unless @dragged_over
-						is_upload_node = @grid[:upload_nodes][target]
-
-						if is_upload_node
-							program = @player.inactive_programs.first
-
-							if program
-								@grid[:upload_nodes].turn target, :off
-								activate_program program, target
-							end
+						unless act_on_vector target
+							@drag_mode = !@grid[:wall][target]
 						end
-
-						head = @player.active_programs.find { |p| p.head == target }
-
-						if head
-							self.selected_program = head
-							return # FIXME
-						end
-
-						@drag_mode = !@grid[:wall][target]
 					end
 
 					if target != @dragged_over
@@ -287,6 +350,10 @@ class GameGrid < Screen
 
 		draw_selection_overlay
 
+		self.attackable_vectors.each do |e|
+			draw_targeting_arrows e, 0xffff0000
+		end
+
 		if @paused
 			@window.draw_quad(
 				0,      0,       0x66000000, # top left
@@ -301,9 +368,8 @@ class GameGrid < Screen
 		end
 	end
 
-	def draw_selection_overlay
-		return unless @selected_vect
-		tl = @grid.position_of @selected_vect
+	def draw_targeting_arrows vect, color
+		tl = @grid.position_of vect
 		tr = tl + Vector(@grid.block_size.x, 0)
 		bl = tl + Vector(0, @grid.block_size.x)
 		br = tl + @grid.block_size
@@ -311,11 +377,15 @@ class GameGrid < Screen
 		f = 15 + o
 		g = Vector(-f,f)
 		e = Vector(-o,o)
-		w = 0xffffffff
 
-		line tl - f, tl - o, w, w, ZOrder::UI
-		line br + f, br + o, w, w, ZOrder::UI
-		line tr - g, tr - e, w, w, ZOrder::UI
-		line bl + g, bl + e, w, w, ZOrder::UI
+		line tl - f, tl - o, color, color, ZOrder::UI
+		line br + f, br + o, color, color, ZOrder::UI
+		line tr - g, tr - e, color, color, ZOrder::UI
+		line bl + g, bl + e, color, color, ZOrder::UI
+	end
+
+	def draw_selection_overlay
+		return unless @selected_vect
+		draw_targeting_arrows @selected_vect, 0xffffffff
 	end
 end
