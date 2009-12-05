@@ -20,7 +20,8 @@ class String
 	# The reverse of camelize.
 	# Makes an underscored, lowercase form from the expression in the string.
 	#
-	# Borrowed from Rail's ActiveSupport::Inflector.
+	# This method was borrowed from Rail's ActiveSupport::Inflector;
+	# it's under the MIT license.
 	def underscore
 		self.to_s.gsub(/::/, '/').
 			gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2').
